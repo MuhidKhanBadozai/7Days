@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Search, User, Heart, Shuffle, ShoppingBag, Menu } from "lucide-react";
 
 export default function Navbar() {
@@ -16,14 +17,14 @@ export default function Navbar() {
     return (
         <header className="sticky top-0 z-50 w-full bg-white text-[#0B2347] shadow-md">
             {/* Top Section */}
-            <div className="flex items-center justify-center px-6 py-8 space-x-6 w-[1700px] mx-auto">
+            <div className="flex items-center justify-center px-[50px] py-8 space-x-6 w-[1700px] mx-auto">
                 {/* Logo */}
                 <div className="flex items-center space-x-4">
                     {/* 🟠 Replace below with your logo image */}
                     <img
-                        src="/NavLogo.png"
+                        src="/logo.jpg"
                         alt="Logo"
-                        className="h-23 w-auto object-contain"
+                        className="h-29 w-auto object-contain"
                     />
                 </div>
 
@@ -39,7 +40,7 @@ export default function Navbar() {
 
 
                 {/* Right Icons */}
-                <div className="flex items-center space-x-5">
+                <div className="flex items-center space-x-[20px]">
                     <button className="flex items-center space-x-2 bg-[#0B2347] text-white px-4 py-4 rounded-full hover:bg-white hover:text-[#0B2347] transition">
                         <User size={22} />
                         <span className="text-lg font-medium">Login / Register</span>
@@ -95,13 +96,27 @@ export default function Navbar() {
                     </li>
 
                     {/* Navigation Links */}
-                    <li className="hover:text-orange-400 cursor-pointer">Home</li>
-                    <li className="hover:text-orange-400 cursor-pointer">Shop</li>
-                    <li className="hover:text-orange-400 cursor-pointer">Catalogue</li>
-                    <li className="hover:text-orange-400 cursor-pointer">About Us</li>
-                    <li className="hover:text-orange-400 cursor-pointer">Contact Us</li>
-                    <li className="hover:text-orange-400 cursor-pointer">Wholesale Account</li>
-                    <li className="hover:text-orange-400 cursor-pointer">Payment Process</li>
+                    <li>
+                        <Link to="/" className="hover:text-orange-400 cursor-pointer">Home</Link>
+                    </li>
+                    <li>
+                        <a className="hover:text-orange-400 cursor-pointer">Shop</a>
+                    </li>
+                    <li>
+                        <Link to="/catalogue" className="hover:text-orange-400 cursor-pointer">Catalogue</Link>
+                    </li>
+                    <li>
+                        <a className="hover:text-orange-400 cursor-pointer">About Us</a>
+                    </li>
+                    <li>
+                        <a className="hover:text-orange-400 cursor-pointer">Contact Us</a>
+                    </li>
+                    <li>
+                        <a className="hover:text-orange-400 cursor-pointer">Wholesale Account</a>
+                    </li>
+                    <li>
+                        <a className="hover:text-orange-400 cursor-pointer">Payment Process</a>
+                    </li>
                 </ul>
             </nav>
         </header>
