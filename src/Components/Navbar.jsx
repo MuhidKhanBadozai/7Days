@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // ⬅️ Add this
 import { Search, User, Heart, Shuffle, ShoppingBag, Menu } from "lucide-react";
 
 export default function Navbar() {
     const [dropdownOpen, setDropdownOpen] = useState(false);
+    const navigate = useNavigate(); // ⬅️ useNavigate for redirect
 
     const categories = [
         "Automotive",
@@ -14,13 +15,18 @@ export default function Navbar() {
         "Home and Kitchen",
     ];
 
+    const handleCategoryClick = (category) => {
+        setDropdownOpen(false);
+        // Navigate to dynamic category page (e.g. /category/Automotive)
+        navigate(`/category/${encodeURIComponent(category)}`);
+    };
+
     return (
         <header className="sticky top-0 z-50 w-full bg-white text-[#0B2347] shadow-md">
             {/* Top Section */}
             <div className="flex items-center justify-center px-[50px] py-8 space-x-6 w-[1700px] mx-auto">
                 {/* Logo */}
                 <div className="flex items-center space-x-4">
-                    {/* 🟠 Replace below with your logo image */}
                     <img
                         src="/logo.jpg"
                         alt="Logo"
@@ -37,7 +43,6 @@ export default function Navbar() {
                     />
                     <Search className="absolute right-4 top-5 text-gray-500" size={26} />
                 </div>
-
 
                 {/* Right Icons */}
                 <div className="flex items-center space-x-[20px]">
@@ -86,6 +91,7 @@ export default function Navbar() {
                                 {categories.map((cat) => (
                                     <li
                                         key={cat}
+                                        onClick={() => handleCategoryClick(cat)} // ⬅️ Navigate on click
                                         className="px-4 py-2 hover:bg-orange-100 cursor-pointer"
                                     >
                                         {cat}
@@ -100,7 +106,7 @@ export default function Navbar() {
                         <Link to="/" className="hover:text-orange-400 cursor-pointer">Home</Link>
                     </li>
                     <li>
-                        <a className="hover:text-orange-400 cursor-pointer">Shop</a>
+                        <Link to="/shop" className="hover:text-orange-400 cursor-pointer">Shop</Link>
                     </li>
                     <li>
                         <Link to="/catalogue" className="hover:text-orange-400 cursor-pointer">Catalogue</Link>

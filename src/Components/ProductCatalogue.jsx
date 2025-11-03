@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 
 const API_BASE = "https://putratraders.com/api"; // your backend API base
 
@@ -8,6 +9,7 @@ const ProductCatalogue = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [quantities, setQuantities] = useState({});
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   // Fetch products from backend
   const fetchProducts = async (category = "") => {
@@ -50,9 +52,13 @@ const ProductCatalogue = () => {
     if (sortOption === "rating") {
       sorted.sort((a, b) => b.rating - a.rating);
     } else if (sortOption === "highToLow") {
-      sorted.sort((a, b) => parsePrice(b.price_200_500) - parsePrice(a.price_200_500));
+      sorted.sort(
+        (a, b) => parsePrice(b.price_200_500) - parsePrice(a.price_200_500)
+      );
     } else if (sortOption === "lowToHigh") {
-      sorted.sort((a, b) => parsePrice(a.price_200_500) - parsePrice(b.price_200_500));
+      sorted.sort(
+        (a, b) => parsePrice(a.price_200_500) - parsePrice(b.price_200_500)
+      );
     }
     return sorted;
   }, [sortOption, products]);
@@ -134,26 +140,49 @@ const ProductCatalogue = () => {
               className="grid grid-cols-12 items-center border-b py-3 hover:bg-gray-50 transition"
             >
               <div className="col-span-2 text-gray-600">{product.sku}</div>
-              <div className="col-span-2">
+
+              {/* Image (click to open ProductDetails) */}
+              <div
+                className="col-span-2 cursor-pointer"
+                onClick={() => navigate(`/product/${product.sku}`)}
+              >
                 <img
-                  src={product.image_url || "/placeholder.png"}
+                  src={
+                    product.image_url
+                      ? product.image_url.startsWith("http")
+                        ? product.image_url
+                        : `${API_BASE.replace("/api", "")}/${product.image_url}`
+                      : "/placeholder.png"
+                  }
                   alt={product.name}
-                  className="w-16 h-16 object-contain mx-auto"
+                  className="w-16 h-16 object-contain mx-auto hover:scale-105 transition-transform"
                 />
               </div>
-              <div className="col-span-3 text-gray-800">{product.name}</div>
+
+              {/* Name (click to open ProductDetails) */}
+              <div
+                className="col-span-3 text-gray-800 cursor-pointer hover:text-blue-600"
+                onClick={() => navigate(`/product/${product.sku}`)}
+              >
+                {product.name}
+              </div>
+
               <div className="col-span-1 text-center font-semibold">
                 ${product.price_200_500}
               </div>
+
               <div className="col-span-2 text-center">
                 <input
                   type="number"
                   min="1"
                   value={quantities[product.sku] || 1}
-                  onChange={(e) => handleQuantityChange(product.sku, e.target.value)}
+                  onChange={(e) =>
+                    handleQuantityChange(product.sku, e.target.value)
+                  }
                   className="w-16 text-center border border-gray-300 rounded-md p-1 focus:ring-1 focus:ring-[#0B2347]"
                 />
               </div>
+
               <div className="col-span-2 text-center">
                 <button className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 transition">
                   Add to cart
