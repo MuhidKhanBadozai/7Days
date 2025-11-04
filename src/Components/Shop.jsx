@@ -1,5 +1,6 @@
 // src/pages/Shop.jsx
 import React, { useEffect, useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 
 const API_BASE = "https://putratraders.com/api"; // your API folder
 
@@ -40,10 +41,18 @@ const RatingStars = ({ rating = 0 }) => {
 
 // individual product card
 const ProductCard = ({ product, onAddToCart }) => {
+  const navigate = useNavigate();
   const imgUrl = buildFullImageUrl(product.image_url);
 
+  const handleClick = (e) => {
+    // Don't navigate if clicking the Add to Cart button
+    if (!e.target.closest('button')) {
+      navigate(`/product/${product.sku}`);
+    }
+  };
+
   return (
-    <div className="group relative w-[220px] min-w-[220px] bg-white rounded-lg shadow-sm border p-4">
+    <div onClick={handleClick} className="group relative w-[220px] min-w-[220px] bg-white rounded-lg shadow-sm border p-4 cursor-pointer">
       <div className="h-40 flex items-center justify-center mb-3">
         <img
           src={imgUrl}
@@ -190,36 +199,43 @@ const Shop = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // fetch function moved outside so it can be reused (e.g. on window focus)
+  const fetchAll = async () => {
+    setLoading(true);
+    try {
+      const url = `${API_BASE}/fetch_all.php`;
+      console.log("Fetching from:", url);
+
+      // prevent cached responses so UI sees new DB entries
+      const res = await fetch(url, { cache: "no-store" });
+      const text = await res.text();
+      console.log("Raw response:", text);
+
+      const data = JSON.parse(text);
+      console.log("Parsed data:", data);
+
+      const processed = (data || []).map((p) => ({
+        ...p,
+        image_url: p.image_url || p.img_path || "/images/products/placeholder.png",
+        price_200_500: p.price_200_500 || p.price || "0.00",
+        category: p.category || "Uncategorized",
+      }));
+
+      setProducts(processed);
+    } catch (err) {
+      console.error("Failed to load products:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchAll = async () => {
-      setLoading(true);
-      try {
-        const url = `${API_BASE}/fetch_all.php`;
-        console.log("Fetching from:", url);
-
-        const res = await fetch(url, { cache: "no-store" });
-        const text = await res.text();
-        console.log("Raw response:", text);
-
-        const data = JSON.parse(text);
-        console.log("Parsed data:", data);
-
-        const processed = (data || []).map((p) => ({
-          ...p,
-          image_url: p.image_url || p.img_path || "/images/products/placeholder.png",
-          price_200_500: p.price_200_500 || p.price || "0.00",
-          category: p.category || "Uncategorized",
-        }));
-
-        setProducts(processed);
-      } catch (err) {
-        console.error("Failed to load products:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchAll();
+
+    // re-fetch when the window/tab regains focus
+    const onFocus = () => fetchAll();
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
   }, []);
 
   // group products by category

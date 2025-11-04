@@ -18,8 +18,8 @@ const ProductCatalogue = () => {
       const url = category
         ? `${API_BASE}/fetch_by_category.php?category=${encodeURIComponent(category)}`
         : `${API_BASE}/fetch_all.php`;
-
-      const res = await fetch(url);
+      // avoid cached responses so updates in the DB show up immediately
+      const res = await fetch(url, { cache: "no-store" });
       const data = await res.json();
 
       if (Array.isArray(data)) {
@@ -38,6 +38,11 @@ const ProductCatalogue = () => {
 
   useEffect(() => {
     fetchProducts(); // load all products on mount
+
+    // re-fetch when the user focuses the window/tab (helps pick up DB changes)
+    const onFocus = () => fetchProducts();
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
   }, []);
 
   // Convert price to number (handles "$16.90" or 16.9)

@@ -17,28 +17,39 @@ const ProductDetails = () => {
   const [quantity, setQuantity] = useState(1);
 
   // Fetch product details by SKU
-  useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        setLoading(true);
-        const res = await fetch(`${API_BASE}/fetch_product_by_sku.php?sku=${sku}`);
-        const data = await res.json();
+  const fetchProduct = async (skuParam) => {
+    try {
+      setLoading(true);
+      // add cache: 'no-store' so updates to the product show up when re-fetched
+      const res = await fetch(
+        `${API_BASE}/fetch_product_by_sku.php?sku=${skuParam}`,
+        { cache: "no-store" }
+      );
+      const data = await res.json();
 
-        if (data && data.sku) {
-          setProduct(data);
-          setMainImage(buildFullImageUrl(data.image_main || data.image_url));
-        } else {
-          console.error("Product not found:", data);
-          setProduct(null);
-        }
-      } catch (err) {
-        console.error("Error fetching product:", err);
-      } finally {
-        setLoading(false);
+      if (data && data.sku) {
+        setProduct(data);
+        setMainImage(buildFullImageUrl(data.image_main || data.image_url));
+      } else {
+        console.error("Product not found:", data);
+        setProduct(null);
       }
-    };
+    } catch (err) {
+      console.error("Error fetching product:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    if (sku) fetchProduct();
+  useEffect(() => {
+    if (sku) fetchProduct(sku);
+
+    // re-fetch this product when the window/tab regains focus
+    const onFocus = () => {
+      if (sku) fetchProduct(sku);
+    };
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
   }, [sku]);
 
   if (loading) {
