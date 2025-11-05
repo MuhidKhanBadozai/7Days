@@ -225,7 +225,7 @@ export default function Navbar() {
                     <li><Link to="/shop" className="hover:text-orange-400">Shop</Link></li>
                     <li><Link to="/catalogue" className="hover:text-orange-400">Catalogue</Link></li>
                     <li><Link to="/contactus" className="hover:text-orange-400">Contact Us</Link></li>
-                    <li><a className="hover:text-orange-400">About Us</a></li>
+                    <li><Link to="/aboutus" className="hover:text-orange-400">About Us</Link></li>
                 </ul>
             </nav>
         </header>

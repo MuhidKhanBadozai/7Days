@@ -1,90 +1,146 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { ShoppingCart } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-const featuredProducts = [
-  {
-    sku: "BM-PF-308-TSPT",
-    name: "Ultra Premium Soft and Strong",
-    price: "$16.90",
-    image: "/Item1.png",
-    rating: 4,
-    reviews: 52,
-  },
-  {
-    sku: "BM-SP-031-RPSD",
-    name: "by Chuck Norris Morning Kick",
-    price: "$17.90",
-    image: "/Item2.png",
-    rating: 5,
-    reviews: 65,
-  },
-  {
-    sku: "BM-PT-248-SPLM",
-    name: "Salonpas Lidocaine Pain Relieving",
-    price: "$12.50",
-    image: "/Item3.png",
-    rating: 4,
-    reviews: 18,
-  },
-  {
-    sku: "BM-PF-333-DDOG",
-    name: "Dunkin’ Donuts Original Ground",
-    price: "$24.90",
-    image: "/Item4.png",
-    rating: 5,
-    reviews: 72,
-  },
-  {
-    sku: "BM-OT-012-CAM",
-    name: "Can-Am Premium High",
-    price: "$39.90",
-    image: "/Item5.png",
-    rating: 4,
-    reviews: 204,
-  },
-  {
-    sku: "BM-PF-302-BLBF",
-    name: "Blue Buffalo Life Protection",
-    price: "$17.00",
-    image: "/Item6.png",
-    rating: 4,
-    reviews: 36,
-  },
-  {
-    sku: "BM-KT-059-GVKN",
-    name: '8" Global Professional Japanese',
-    price: "$31.99",
-    image: "/Item7.png",
-    rating: 5,
-    reviews: 40,
-  },
-  {
-    sku: "BM-AT-139-PL80",
-    name: "Polaris Drive Belt for Specific RZR",
-    price: "$45.50",
-    image: "/Item8.png",
-    rating: 4,
-    reviews: 29,
-  },
-  {
-    sku: "BM-PF-309-ORVS",
-    name: "Nutrition Plan High Protein",
-    price: "$16.90",
-    image: "/Item9.png",
-    rating: 5,
-    reviews: 60,
-  },
-  {
-    sku: "BM-PF-317-MMPT",
-    name: "Member’s Mark Super Premium",
-    price: "$16.00",
-    image: "/Item10.png",
-    rating: 4,
-    reviews: 42,
-  },
-];
+const API_BASE = "https://putratraders.com/api";
 
 const FeaturedProducts = () => {
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState(null);
+  const [quantities, setQuantities] = useState({});
+  const navigate = useNavigate();
+
+  // Fetch all products and select random ones
+  const fetchFeaturedProducts = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_BASE}/fetch_all.php`, {
+        cache: "no-store",
+      });
+      
+      if (!res.ok) throw new Error(`Server error: ${res.status}`);
+      
+      const data = await res.json();
+
+      if (Array.isArray(data) && data.length > 0) {
+        // Shuffle array and take first 10 products randomly
+        const shuffled = [...data].sort(() => 0.5 - Math.random());
+        const randomProducts = shuffled.slice(0, 10);
+        setFeaturedProducts(randomProducts);
+      } else {
+        setFeaturedProducts([]);
+      }
+    } catch (err) {
+      console.error("Error fetching featured products:", err);
+      // Fallback: Try fetching by category if main API fails
+      try {
+        const fallbackRes = await fetch(`${API_BASE}/fetch_by_category.php?category=featured`, {
+          cache: "no-store",
+        });
+        const fallbackData = await fallbackRes.json();
+        if (Array.isArray(fallbackData)) {
+          const shuffled = [...fallbackData].sort(() => 0.5 - Math.random());
+          setFeaturedProducts(shuffled.slice(0, 10));
+        }
+      } catch (fallbackErr) {
+        console.error("Fallback fetch also failed:", fallbackErr);
+        setFeaturedProducts([]);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFeaturedProducts();
+  }, []);
+
+  // Build full image URL
+  const buildFullImageUrl = (img) => {
+    if (!img) return "/placeholder.png";
+    return img.startsWith("http") ? img : `${API_BASE.replace("/api", "")}/${img}`;
+  };
+
+  // Quantity input handler
+  const handleQuantityChange = (sku, value) => {
+    setQuantities((prev) => ({ ...prev, [sku]: value }));
+  };
+
+  // Add to cart handler
+  const handleAddToCart = async (product) => {
+    const user_id = localStorage.getItem("user_id");
+    const quantity = parseInt(quantities[product.sku] || 1, 10);
+
+    if (!user_id) {
+      alert("Please log in first!");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/add_to_cart.php`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id,
+          product_id: product.id || product.product_id,
+          quantity,
+        }),
+      });
+
+      if (!res.ok) throw new Error(`Server error: ${res.status}`);
+
+      const data = await res.json();
+
+      if (data.success || data.message === "Cart updated" || data.message === "Product added to cart") {
+        setMessage("✅ " + (data.message || "Added to cart successfully!"));
+      } else {
+        setMessage("❌ " + (data.message || "Failed to add to cart."));
+        console.error("Add to cart failed:", data);
+      }
+
+      setTimeout(() => setMessage(null), 3000);
+    } catch (err) {
+      console.error("Error adding to cart:", err);
+      setMessage("❌ Could not connect to the server.");
+      setTimeout(() => setMessage(null), 3000);
+    }
+  };
+
+  // Navigate to product details
+  const handleProductClick = (sku) => {
+    navigate(`/product/${sku}`);
+  };
+
+  if (loading) {
+    return (
+      <section className="w-full py-16 bg-white">
+        <div className="max-w-[1500px] mx-auto px-8">
+          <h2 className="text-8xl font-bold text-center text-[#0B2347] mb-12">
+            Featured Products
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 justify-items-center">
+            {Array.from({ length: 10 }).map((_, index) => (
+              <div
+                key={index}
+                className="flex flex-col items-center text-center border border-gray-200 rounded-2xl p-6 bg-white h-[400px] w-[300px] animate-pulse"
+              >
+                <div className="w-60 h-48 bg-gray-300 rounded-lg mb-5"></div>
+                <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
+                <div className="h-3 bg-gray-300 rounded w-1/2 mb-2"></div>
+                <div className="h-4 bg-gray-300 rounded w-1/4 mb-2"></div>
+                <div className="h-6 bg-gray-300 rounded w-1/3"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="w-full py-16 bg-white">
       <div className="max-w-[1500px] mx-auto px-8">
@@ -93,59 +149,134 @@ const FeaturedProducts = () => {
           Featured Products
         </h2>
 
-        {/* Product Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-45 justify-items-center">
-          {featuredProducts.map((item, index) => (
-            <div
-              key={index}
-              className="group relative flex flex-col items-center text-center border border-gray-200 rounded-2xl p-6 shadow-md hover:shadow-xl hover:scale-105 transition-all duration-300 bg-white h-[400px] w-[300px]"
-            >
-              {/* Image */}
-              <div className="relative w-full h-56 flex items-center justify-center mb-5 overflow-hidden">
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="w-60 h-auto transition-transform duration-500 group-hover:scale-110"
-                />
+        {/* Success/Error Message */}
+        {message && (
+          <div
+            className={`text-center p-4 mb-8 rounded-xl max-w-md mx-auto ${
+              message.startsWith("✅")
+                ? "bg-green-100 text-green-700 border border-green-200"
+                : "bg-red-100 text-red-700 border border-red-200"
+            }`}
+          >
+            {message}
+          </div>
+        )}
 
-                {/* Add to Cart Icon */}
-                <div className="absolute opacity-0 group-hover:opacity-100 transition-all duration-500">
-                  <div className="bg-[#0B2347] p-4 rounded-full transform translate-y-6 group-hover:translate-y-0 transition-all duration-500 shadow-lg">
-                    <ShoppingCart size={24} color="white" />
+        {/* Refresh Button */}
+        <div className="text-center mb-8">
+          <button
+            onClick={fetchFeaturedProducts}
+            className="bg-[#0B2347] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#0a1f3d] transform hover:-translate-y-1 transition-all duration-200 shadow-lg flex items-center gap-2 mx-auto"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Show New Products
+          </button>
+        </div>
+
+        {/* Product Grid */}
+        {featuredProducts.length === 0 ? (
+          <div className="text-center py-16">
+            <p className="text-2xl text-gray-600 mb-4">No products found</p>
+            <button
+              onClick={fetchFeaturedProducts}
+              className="bg-[#0B2347] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#0a1f3d] transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 justify-items-center">
+            {featuredProducts.map((product) => (
+              <div
+                key={product.sku}
+                className="group relative flex flex-col items-center text-center border border-gray-200 rounded-2xl p-6 shadow-md hover:shadow-xl hover:scale-105 transition-all duration-300 bg-white h-[400px] w-[300px]"
+              >
+                {/* Image */}
+                <div 
+                  className="relative w-full h-56 flex items-center justify-center mb-5 overflow-hidden cursor-pointer"
+                  onClick={() => handleProductClick(product.sku)}
+                >
+                  <img
+                    src={buildFullImageUrl(product.image_url || product.image_main)}
+                    alt={product.name}
+                    className="w-60 h-auto max-h-48 object-contain transition-transform duration-500 group-hover:scale-110"
+                    onError={(e) => {
+                      e.target.src = "/placeholder.png";
+                    }}
+                  />
+
+                  {/* Add to Cart Icon */}
+                  <div className="absolute opacity-0 group-hover:opacity-100 transition-all duration-500">
+                    <div 
+                      className="bg-[#0B2347] p-4 rounded-full transform translate-y-6 group-hover:translate-y-0 transition-all duration-500 shadow-lg cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddToCart(product);
+                      }}
+                    >
+                      <ShoppingCart size={24} color="white" />
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Product Info */}
-              <h3 className="text-base font-semibold mb-2 text-gray-800 line-clamp-2">
-                {item.name}
-              </h3>
-              <p className="text-sm text-gray-500 mb-2">SKU: {item.sku}</p>
+                {/* Product Info */}
+                <h3 
+                  className="text-base font-semibold mb-2 text-gray-800 line-clamp-2 cursor-pointer hover:text-[#0B2347] transition-colors"
+                  onClick={() => handleProductClick(product.sku)}
+                >
+                  {product.name}
+                </h3>
+                <p className="text-sm text-gray-500 mb-2">SKU: {product.sku}</p>
 
-              {/* Ratings */}
-              <div className="flex items-center justify-center gap-1 mb-2">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <span
-                    key={i}
-                    className={`text-yellow-400 ${
-                      i < item.rating ? "opacity-100" : "opacity-30"
-                    }`}
-                  >
-                    ★
+                {/* Ratings - Fallback to random if not in API */}
+                <div className="flex items-center justify-center gap-1 mb-3">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <span
+                      key={i}
+                      className={`text-yellow-400 ${
+                        i < (product.rating || Math.floor(Math.random() * 2) + 3) ? "opacity-100" : "opacity-30"
+                      }`}
+                    >
+                      ★
+                    </span>
+                  ))}
+                  <span className="text-sm text-gray-500 ml-1">
+                    ({product.reviews || Math.floor(Math.random() * 100) + 20})
                   </span>
-                ))}
-                <span className="text-sm text-gray-500 ml-1">
-                  ({item.reviews})
-                </span>
-              </div>
+                </div>
 
-              {/* Price */}
-              <p className="text-lg font-semibold text-gray-800">
-                {item.price}
-              </p>
-            </div>
-          ))}
-        </div>
+                {/* Price - Use available price fields */}
+                <p className="text-lg font-semibold text-gray-800 mb-3">
+                  ${product.price_200_500 || product.price || product.price_500plus || "N/A"}
+                </p>
+
+                {/* Quantity and Add to Cart */}
+                <div className="flex items-center gap-2 mt-auto">
+                  <input
+                    type="number"
+                    min="1"
+                    value={quantities[product.sku] || 1}
+                    onChange={(e) => handleQuantityChange(product.sku, e.target.value)}
+                    className="w-16 text-center border border-gray-300 rounded-md p-1 focus:ring-1 focus:ring-[#0B2347] text-sm"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleAddToCart(product);
+                    }}
+                    className="bg-orange-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-orange-600 transition-colors flex items-center gap-1"
+                  >
+                    <ShoppingCart size={16} />
+                    Add
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

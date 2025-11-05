@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE = "https://putratraders.com/api"; // ✅ your backend API base
+const API_BASE = "https://putratraders.com/api";
 
 const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -11,7 +11,6 @@ const Cart = () => {
 
   const user_id = localStorage.getItem("user_id");
 
-  // ✅ Fetch cart items
   const fetchCart = async () => {
     if (!user_id) {
       navigate("/login");
@@ -52,7 +51,9 @@ const Cart = () => {
       if (data.success) {
         setCartItems((prev) =>
           prev.map((item) =>
-            item.id === cart_id ? { ...item, quantity: newQuantity } : item
+            item.cart_id === cart_id
+              ? { ...item, quantity: newQuantity }
+              : item
           )
         );
       } else {
@@ -64,7 +65,7 @@ const Cart = () => {
     }
   };
 
-  // ✅ Remove from cart
+  // ✅ Remove item
   const handleRemove = async (cart_id) => {
     if (!window.confirm("Remove this item from your cart?")) return;
 
@@ -77,7 +78,9 @@ const Cart = () => {
 
       const data = await res.json();
       if (data.success) {
-        setCartItems((prev) => prev.filter((item) => item.id !== cart_id));
+        setCartItems((prev) =>
+          prev.filter((item) => item.cart_id !== cart_id)
+        );
         setMessage("🗑️ Item removed successfully.");
       } else {
         setMessage("❌ Failed to remove item.");
@@ -90,12 +93,10 @@ const Cart = () => {
     setTimeout(() => setMessage(null), 3000);
   };
 
-  // ✅ Calculate total price
-  const calculateTotal = () => {
-    return cartItems
+  const calculateTotal = () =>
+    cartItems
       .reduce((sum, item) => sum + parseFloat(item.price) * item.quantity, 0)
       .toFixed(2);
-  };
 
   return (
     <div className="w-[1000px] mx-auto my-20 p-10 bg-white rounded-lg shadow-md">
@@ -137,7 +138,7 @@ const Cart = () => {
 
           {cartItems.map((item) => (
             <div
-              key={item.id}
+              key={item.cart_id}
               className="grid grid-cols-12 items-center border-b py-3 hover:bg-gray-50"
             >
               <div
@@ -164,7 +165,7 @@ const Cart = () => {
                   min="1"
                   value={item.quantity}
                   onChange={(e) =>
-                    handleQuantityChange(item.id, parseInt(e.target.value))
+                    handleQuantityChange(item.cart_id, parseInt(e.target.value))
                   }
                   className="w-16 border text-center rounded-md p-1"
                 />
@@ -176,7 +177,7 @@ const Cart = () => {
 
               <div className="col-span-2 text-center">
                 <button
-                  onClick={() => handleRemove(item.id)}
+                  onClick={() => handleRemove(item.cart_id)}
                   className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
                 >
                   Remove
@@ -185,10 +186,10 @@ const Cart = () => {
             </div>
           ))}
 
-          {/* ✅ Cart Summary */}
           <div className="text-right mt-6">
             <h2 className="text-xl font-semibold">
-              Total: <span className="text-orange-600">${calculateTotal()}</span>
+              Total:{" "}
+              <span className="text-orange-600">${calculateTotal()}</span>
             </h2>
             <button
               onClick={() => navigate("/checkout")}
