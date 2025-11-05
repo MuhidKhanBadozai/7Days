@@ -1,9 +1,9 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./App.css";
 import Home from "./Pages/Home.jsx";
-import Login from "./Pages/Login.jsx";
-import Signup from "./Pages/Signup.jsx";
-import Cart from "./Pages/Cart.jsx";
+import Login from "./Pages/login.jsx";      // Fixed: lowercase
+import Signup from "./Pages/signup.jsx";    // Fixed: lowercase
+import Cart from "./Pages/cart.jsx";        // Fixed: lowercase
 import Navbar from "./Components/Navbar.jsx";
 import ProductCatalogue from "./Components/ProductCatalogue.jsx";
 import Footer from "./Components/Footer.jsx";
