@@ -4,7 +4,7 @@ import { MapPin, Phone, Mail } from "lucide-react";
 const Footer = () => {
   return (
     <footer className="bg-[#0B2347] text-white py-10 px-6 md:px-16">
-  <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-6 border-b border-gray-700 pb-10">
+      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-6 border-b border-gray-700 pb-10">
         {/* Brand Info */}
         <div className="space-y-4">
           <img
@@ -14,15 +14,15 @@ const Footer = () => {
           />
           <div className="flex items-start gap-2">
             <MapPin size={18} className="mt-1 text-[#f9b233]" />
-            <p>18538 Anderwood Forest Dr Richmond TX 77407</p>
+            <p>5900 BALCONES DR STE 19007 AUSTIN, TX 78731</p>
           </div>
           <div className="flex items-center gap-2">
             <Phone size={18} className="text-[#f9b233]" />
-            <p>+1 (281) 6289854</p>
+            <p>+1 (512) 5430711</p>
           </div>
           <div className="flex items-center gap-2">
             <Mail size={18} className="text-[#f9b233]" />
-            <p>support@brandmasterswholesale.com</p>
+            <p>info@putratraders.com</p>
           </div>
         </div>
 

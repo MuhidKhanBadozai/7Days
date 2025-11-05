@@ -1,23 +1,37 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom"; // ⬅️ Add this
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Search, User, Heart, Shuffle, ShoppingBag, Menu } from "lucide-react";
 
 export default function Navbar() {
     const [dropdownOpen, setDropdownOpen] = useState(false);
-    const navigate = useNavigate(); // ⬅️ useNavigate for redirect
+    const [categories, setCategories] = useState([]); // ⬅️ State for API categories
+    const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
 
-    const categories = [
-        "Automotive",
-        "Beauty and Personal Care",
-        "Perfumes",
-        "Grocery and Gourmet Food",
-        "Health and Household",
-        "Home and Kitchen",
-    ];
+    // ✅ Fetch categories from API
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const res = await fetch("https://putratraders.com/api/fetch_all_categories.php");
+                const data = await res.json();
+
+                if (Array.isArray(data)) {
+                    setCategories(data);
+                } else {
+                    console.error("Unexpected response format:", data);
+                }
+            } catch (error) {
+                console.error("Error fetching categories:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchCategories();
+    }, []);
 
     const handleCategoryClick = (category) => {
         setDropdownOpen(false);
-        // Navigate to dynamic category page (e.g. /category/Automotive)
         navigate(`/category/${encodeURIComponent(category)}`);
     };
 
@@ -88,15 +102,21 @@ export default function Navbar() {
 
                         {dropdownOpen && (
                             <ul className="absolute left-0 mt-2 w-64 bg-white text-black rounded-lg shadow-lg overflow-hidden z-50">
-                                {categories.map((cat) => (
-                                    <li
-                                        key={cat}
-                                        onClick={() => handleCategoryClick(cat)} // ⬅️ Navigate on click
-                                        className="px-4 py-2 hover:bg-orange-100 cursor-pointer"
-                                    >
-                                        {cat}
-                                    </li>
-                                ))}
+                                {loading ? (
+                                    <li className="px-4 py-2 text-gray-500">Loading...</li>
+                                ) : categories.length > 0 ? (
+                                    categories.map((cat, index) => (
+                                        <li
+                                            key={index}
+                                            onClick={() => handleCategoryClick(cat)}
+                                            className="px-4 py-2 hover:bg-orange-100 cursor-pointer"
+                                        >
+                                            {cat}
+                                        </li>
+                                    ))
+                                ) : (
+                                    <li className="px-4 py-2 text-gray-500">No categories found</li>
+                                )}
                             </ul>
                         )}
                     </li>

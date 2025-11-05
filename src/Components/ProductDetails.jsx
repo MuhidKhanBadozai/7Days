@@ -26,7 +26,7 @@ const ProductDetails = () => {
         { cache: "no-store" }
       );
       const data = await res.json();
-
+      console.log("Fetched product data:", data);
       if (data && data.sku) {
         setProduct(data);
         setMainImage(buildFullImageUrl(data.image_main || data.image_url));
