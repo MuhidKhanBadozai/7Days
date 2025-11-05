@@ -10,6 +10,7 @@ import Footer from './Components/Footer.jsx'
 import Shop from "./Components/Shop.jsx";
 import Category from "./Components/Category.jsx";
 import ProductDetails from "./Components/ProductDetails.jsx";
+import ContactUs from "./Pages/Contactus.jsx";
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
         <Route path="/shop" element={<Shop />} />
          <Route path="/category/:categoryName" element={<Category />} />
          <Route path="/product/:sku" element={<ProductDetails />} />
+         <Route path="/contactus" element={<ContactUs />} />
       </Routes>
       {/* Footer is outside Routes so it shows on every page */}
       <Footer />

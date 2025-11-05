@@ -9,18 +9,17 @@ const buildFullImageUrl = (img) => {
 };
 
 const ProductDetails = () => {
-  const { sku } = useParams(); // SKU from URL
+  const { sku } = useParams();
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [mainImage, setMainImage] = useState("");
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [message, setMessage] = useState("");
+  const [activeTab, setActiveTab] = useState("description");
 
-  // Example: logged-in user ID stored in localStorage
   const userId = localStorage.getItem("user_id");
 
-  // Fetch product details by SKU
   const fetchProduct = async (skuParam) => {
     try {
       setLoading(true);
@@ -45,7 +44,6 @@ const ProductDetails = () => {
     if (sku) fetchProduct(sku);
   }, [sku]);
 
-  // ✅ Add to Cart Function
   const handleAddToCart = async () => {
     if (!userId) {
       alert("Please login first!");
@@ -68,6 +66,7 @@ const ProductDetails = () => {
 
       if (data.success || data.message === "Cart updated" || data.message === "Product added to cart") {
         setMessage("✅ " + (data.message || "Added to cart successfully!"));
+        setTimeout(() => setMessage(""), 3000);
       } else {
         setMessage("❌ " + (data.message || "Failed to add to cart."));
         console.error("Add to cart failed:", data);
@@ -80,110 +79,358 @@ const ProductDetails = () => {
 
   if (loading) {
     return (
-      <div className="text-center py-20 text-gray-600 text-lg">
-        Loading product...
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-xl text-gray-600">Loading product details...</p>
+        </div>
       </div>
     );
   }
 
   if (!product) {
     return (
-      <div className="text-center py-20 text-gray-600 text-lg">
-        Product not found.
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">😕</div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Product Not Found</h2>
+          <p className="text-gray-600 mb-6">The product you're looking for doesn't exist.</p>
+          <button
+            onClick={() => navigate("/")}
+            className="bg-orange-500 text-white px-6 py-3 rounded-lg hover:bg-orange-600 transition"
+          >
+            Back to Home
+          </button>
+        </div>
       </div>
     );
   }
 
+  const allImages = [
+    product.image_main,
+    product.image_1,
+    product.image_2,
+    product.image_3,
+    product.image_4,
+    product.image_url
+  ].filter(Boolean).filter((img, index, self) => self.indexOf(img) === index);
+
   return (
-    <div className="max-w-6xl mx-auto my-16 bg-white shadow-md rounded-lg p-10">
-      {/* Breadcrumb */}
-      <div className="text-sm text-gray-500 mb-4">
-        <button onClick={() => navigate(-1)} className="hover:underline">
-          Home
-        </button>{" "}
-        / {product.name}
-      </div>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Breadcrumb */}
+        <nav className="flex mb-8" aria-label="Breadcrumb">
+          <ol className="flex items-center space-x-2 text-sm">
+            <li>
+              <button 
+                onClick={() => navigate("/")}
+                className="text-gray-500 hover:text-gray-700 transition"
+              >
+                Home
+              </button>
+            </li>
+            <li className="flex items-center">
+              <span className="text-gray-400 mx-2">›</span>
+              <span className="text-gray-500">Products</span>
+            </li>
+            <li className="flex items-center">
+              <span className="text-gray-400 mx-2">›</span>
+              <span className="text-gray-900 font-medium truncate max-w-32">{product.name}</span>
+            </li>
+          </ol>
+        </nav>
 
-      {/* Product Section */}
-      <div className="flex flex-col md:flex-row gap-10">
-        {/* Left: Images */}
-        <div className="flex-1">
-          <img
-            src={mainImage}
-            alt={product.name}
-            className="w-full max-h-[400px] object-contain border rounded-lg"
-          />
-
-          <div className="flex gap-3 mt-4 justify-center flex-wrap">
-            {[product.image_1, product.image_2, product.image_3, product.image_4]
-              .filter(Boolean)
-              .map((img, idx) => (
+        {/* Main Product Section */}
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 p-8">
+            {/* Image Gallery */}
+            <div className="space-y-6">
+              {/* Main Image */}
+              <div className="bg-gray-100 rounded-2xl p-8 flex items-center justify-center h-96">
                 <img
-                  key={idx}
-                  src={buildFullImageUrl(img)}
-                  alt={`Thumbnail ${idx}`}
-                  onClick={() => setMainImage(buildFullImageUrl(img))}
-                  className={`w-20 h-20 object-contain border rounded-md cursor-pointer hover:ring-2 hover:ring-[#0B2347] transition ${mainImage === buildFullImageUrl(img)
-                      ? "ring-2 ring-[#0B2347]"
-                      : ""
-                    }`}
+                  src={mainImage}
+                  alt={product.name}
+                  className="max-h-80 object-contain transition-transform duration-300 hover:scale-105"
                 />
-              ))}
-          </div>
-        </div>
+              </div>
 
-        {/* Right: Details */}
-        <div className="flex-1 space-y-4">
-          <h1 className="text-2xl font-semibold text-gray-900">{product.name}</h1>
-          <p className="text-gray-700 text-sm">SKU: {product.sku}</p>
+              {/* Thumbnail Gallery */}
+              {allImages.length > 1 && (
+                <div className="flex gap-4 overflow-x-auto pb-2">
+                  {allImages.map((img, idx) => (
+                    <img
+                      key={idx}
+                      src={buildFullImageUrl(img)}
+                      alt={`${product.name} view ${idx + 1}`}
+                      onClick={() => setMainImage(buildFullImageUrl(img))}
+                      className={`w-20 h-20 object-cover rounded-xl cursor-pointer border-2 transition-all duration-200 hover:border-orange-400 ${
+                        mainImage === buildFullImageUrl(img)
+                          ? "border-orange-500 shadow-md"
+                          : "border-gray-200"
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
 
-          <div className="flex items-center gap-2">
-            <p className="text-3xl font-bold text-[#0B2347]">
-              ${product.price_200_500}
-            </p>
-            <span className="text-gray-500 text-sm">(200–500 units)</span>
-          </div>
+            {/* Product Info */}
+            <div className="space-y-6">
+              <div>
+                <h1 className="text-4xl font-bold text-gray-900 mb-2 leading-tight">
+                  {product.name}
+                </h1>
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-full">
+                    In Stock
+                  </span>
+                  <span className="text-gray-500 text-sm">SKU: {product.sku}</span>
+                </div>
+              </div>
 
-          <div className="border rounded-md p-3 mt-3">
-            <p className="text-gray-700 text-sm">Discount tiers:</p>
-            <div className="flex flex-col gap-1 mt-2 text-gray-800">
-              <span>200–500: ${product.price_200_500} (5% off)</span>
-              <span>501+: ${product.price_500plus} (10% off)</span>
+              {/* Pricing */}
+              <div className="space-y-3">
+                <div className="flex items-baseline gap-3">
+                  <span className="text-5xl font-bold text-[#0B2347]">
+                    ${product.price_200_500}
+                  </span>
+                  <span className="text-gray-500 text-lg">per unit</span>
+                </div>
+                <p className="text-gray-600">200–500 units (5% discount applied)</p>
+              </div>
+
+              {/* Discount Tiers */}
+              <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl p-6 border border-orange-100">
+                <h3 className="font-semibold text-gray-900 mb-3">Bulk Pricing Tiers</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="bg-white rounded-lg p-4 text-center border">
+                    <div className="text-sm text-gray-600">200-500 Units</div>
+                    <div className="text-xl font-bold text-[#0B2347]">${product.price_200_500}</div>
+                    <div className="text-green-600 text-sm">5% OFF</div>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 text-center border">
+                    <div className="text-sm text-gray-600">501+ Units</div>
+                    <div className="text-xl font-bold text-[#0B2347]">${product.price_500plus}</div>
+                    <div className="text-green-600 text-sm">10% OFF</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quantity & Add to Cart */}
+              <div className="space-y-4 pt-4">
+                <div className="flex items-center gap-4">
+                  <label className="text-gray-700 font-semibold text-lg">Quantity:</label>
+                  <div className="flex items-center border border-gray-300 rounded-xl overflow-hidden">
+                    <button
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      className="px-4 py-3 bg-gray-100 hover:bg-gray-200 transition"
+                    >
+                      -
+                    </button>
+                    <input
+                      type="number"
+                      min="1"
+                      value={quantity}
+                      onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                      className="w-20 text-center py-3 border-0 focus:ring-0 focus:outline-none text-lg"
+                    />
+                    <button
+                      onClick={() => setQuantity(quantity + 1)}
+                      className="px-4 py-3 bg-gray-100 hover:bg-gray-200 transition"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <button
+                    onClick={handleAddToCart}
+                    className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 text-white py-4 px-8 rounded-xl font-semibold text-lg hover:from-orange-600 hover:to-amber-600 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  >
+                    🛒 Add to Cart
+                  </button>
+                </div>
+
+                {message && (
+                  <div className={`p-4 rounded-xl text-center font-semibold ${
+                    message.includes("✅") 
+                      ? "bg-green-100 text-green-800 border border-green-200" 
+                      : "bg-red-100 text-red-800 border border-red-200"
+                  }`}>
+                    {message}
+                  </div>
+                )}
+              </div>
+
+              {/* Quick Features */}
+              <div className="grid grid-cols-2 gap-4 pt-6">
+                <div className="flex items-center gap-2 text-gray-600">
+                  <span className="text-2xl">🚚</span>
+                  <span className="text-sm">Free Shipping</span>
+                </div>
+                <div className="flex items-center gap-2 text-gray-600">
+                  <span className="text-2xl">🔒</span>
+                  <span className="text-sm">Secure Payment</span>
+                </div>
+                <div className="flex items-center gap-2 text-gray-600">
+                  <span className="text-2xl">↩️</span>
+                  <span className="text-sm">30-Day Return</span>
+                </div>
+                <div className="flex items-center gap-2 text-gray-600">
+                  <span className="text-2xl">📞</span>
+                  <span className="text-sm">24/7 Support</span>
+                </div>
+              </div>
             </div>
           </div>
+        </div>
 
-          <div className="mt-5 flex items-center gap-3">
-            <label className="text-gray-700 font-medium">Quantity:</label>
-            <input
-              type="number"
-              min="1"
-              value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
-              className="border rounded-md w-20 text-center p-1 focus:ring-1 focus:ring-[#0B2347]"
-            />
+        {/* Tabs Section */}
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          {/* Tab Headers */}
+          <div className="border-b border-gray-200">
+            <nav className="flex space-x-8 px-8">
+              {[
+                { id: "description", label: "Product Description" },
+                { id: "specifications", label: "Specifications" },
+                { id: "shipping", label: "Shipping Info" },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`py-4 px-1 font-medium text-lg border-b-2 transition-colors ${
+                    activeTab === tab.id
+                      ? "border-orange-500 text-orange-600"
+                      : "border-transparent text-gray-500 hover:text-gray-700"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </nav>
           </div>
 
-          <button
-            onClick={handleAddToCart}
-            className="bg-orange-500 text-white px-6 py-3 mt-6 rounded-md hover:bg-orange-600 transition"
-          >
-            Add to Cart
-          </button>
+          {/* Tab Content */}
+          <div className="p-8">
+            {activeTab === "description" && (
+              <div className="space-y-6">
+                <h3 className="text-2xl font-bold text-gray-900">About This Product</h3>
+                <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed">
+                  <p className="text-lg">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                  </p>
+                  <p>
+                    Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.
+                  </p>
+                  <ul className="list-disc pl-6 space-y-2">
+                    <li>High-quality materials for long-lasting durability</li>
+                    <li>Precision engineering for optimal performance</li>
+                    <li>Industry-standard compliance and certifications</li>
+                    <li>Easy installation and maintenance</li>
+                    <li>Comprehensive warranty coverage</li>
+                  </ul>
+                </div>
+              </div>
+            )}
 
-          {message && <p className="text-green-600 mt-2">{message}</p>}
-        </div>
-      </div>
+            {activeTab === "specifications" && (
+              <div className="space-y-6">
+                <h3 className="text-2xl font-bold text-gray-900">Technical Specifications</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="bg-gray-50 rounded-xl p-6">
+                    <h4 className="font-semibold text-gray-900 mb-3">Basic Info</h4>
+                    <dl className="space-y-3">
+                      <div>
+                        <dt className="text-sm text-gray-500">Brand</dt>
+                        <dd className="font-medium">{product.brand || "N/A"}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-gray-500">Item Weight</dt>
+                        <dd className="font-medium">{product.item_weight || "N/A"}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-gray-500">Dimensions</dt>
+                        <dd className="font-medium">{product.dimensions || "N/A"}</dd>
+                      </div>
+                    </dl>
+                  </div>
 
-      {/* Tabs Section */}
-      <div className="mt-10 border-t pt-6">
-        <h2 className="text-lg font-semibold mb-3">Additional Information</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-gray-700 text-sm">
-          <div><strong>Brand:</strong> {product.brand || "N/A"}</div>
-          <div><strong>Item Weight:</strong> {product.item_weight || "N/A"}</div>
-          <div><strong>Dimensions:</strong> {product.dimensions || "N/A"}</div>
-          <div><strong>Manufacturer Part #:</strong> {product.manufacturer_part || "N/A"}</div>
-          <div><strong>OEM Part #:</strong> {product.oem_part || "N/A"}</div>
-          <div><strong>Date Available:</strong> {product.date_available || "N/A"}</div>
+                  <div className="bg-gray-50 rounded-xl p-6">
+                    <h4 className="font-semibold text-gray-900 mb-3">Part Numbers</h4>
+                    <dl className="space-y-3">
+                      <div>
+                        <dt className="text-sm text-gray-500">Manufacturer Part #</dt>
+                        <dd className="font-medium">{product.manufacturer_part || "N/A"}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-gray-500">OEM Part #</dt>
+                        <dd className="font-medium">{product.oem_part || "N/A"}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-gray-500">SKU</dt>
+                        <dd className="font-medium">{product.sku}</dd>
+                      </div>
+                    </dl>
+                  </div>
+
+                  <div className="bg-gray-50 rounded-xl p-6">
+                    <h4 className="font-semibold text-gray-900 mb-3">Additional Info</h4>
+                    <dl className="space-y-3">
+                      <div>
+                        <dt className="text-sm text-gray-500">Date Available</dt>
+                        <dd className="font-medium">{product.date_available || "N/A"}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-gray-500">Category</dt>
+                        <dd className="font-medium">{product.category || "N/A"}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-gray-500">Warranty</dt>
+                        <dd className="font-medium">1 Year Limited</dd>
+                      </div>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === "shipping" && (
+              <div className="space-y-6">
+                <h3 className="text-2xl font-bold text-gray-900">Shipping & Returns</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <h4 className="font-semibold text-lg text-gray-900">Shipping Information</h4>
+                    <div className="prose text-gray-700">
+                      <p>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.
+                      </p>
+                      <ul className="list-disc pl-6 space-y-2">
+                        <li>Standard shipping: 3-5 business days</li>
+                        <li>Express shipping: 1-2 business days</li>
+                        <li>Free shipping on orders over $500</li>
+                        <li>International shipping available</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <h4 className="font-semibold text-lg text-gray-900">Return Policy</h4>
+                    <div className="prose text-gray-700">
+                      <p>
+                        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.
+                      </p>
+                      <ul className="list-disc pl-6 space-y-2">
+                        <li>30-day money-back guarantee</li>
+                        <li>Free returns for defective items</li>
+                        <li>Original packaging required</li>
+                        <li>Contact support for return authorization</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -224,10 +224,8 @@ export default function Navbar() {
                     <li><Link to="/" className="hover:text-orange-400">Home</Link></li>
                     <li><Link to="/shop" className="hover:text-orange-400">Shop</Link></li>
                     <li><Link to="/catalogue" className="hover:text-orange-400">Catalogue</Link></li>
+                    <li><Link to="/contactus" className="hover:text-orange-400">Contact Us</Link></li>
                     <li><a className="hover:text-orange-400">About Us</a></li>
-                    <li><a className="hover:text-orange-400">Contact Us</a></li>
-                    <li><a className="hover:text-orange-400">Wholesale Account</a></li>
-                    <li><a className="hover:text-orange-400">Payment Process</a></li>
                 </ul>
             </nav>
         </header>
