@@ -1,6 +1,9 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import './App.css'
 import Home from './Pages/Home.jsx'
+import Login from "./Pages/login.jsx";
+import Signup from "./Pages/signup.jsx";
+import Cart from "./Pages/cart.jsx";
 import Navbar from './Components/Navbar.jsx'
 import ProductCatalogue from './Components/ProductCatalogue.jsx'
 import Footer from './Components/Footer.jsx'
@@ -16,6 +19,9 @@ function App() {
 
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/cart" element={<Cart />} />
         <Route path="/catalogue" element={<ProductCatalogue />} />
         <Route path="/shop" element={<Shop />} />
          <Route path="/category/:categoryName" element={<Category />} />

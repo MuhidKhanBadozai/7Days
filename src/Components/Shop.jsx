@@ -46,13 +46,16 @@ const ProductCard = ({ product, onAddToCart }) => {
 
   const handleClick = (e) => {
     // Don't navigate if clicking the Add to Cart button
-    if (!e.target.closest('button')) {
+    if (!e.target.closest("button")) {
       navigate(`/product/${product.sku}`);
     }
   };
 
   return (
-    <div onClick={handleClick} className="group relative w-[220px] min-w-[220px] bg-white rounded-lg shadow-sm border p-4 cursor-pointer">
+    <div
+      onClick={handleClick}
+      className="group relative w-[220px] min-w-[220px] bg-white rounded-lg shadow-sm border p-4 cursor-pointer"
+    >
       <div className="h-40 flex items-center justify-center mb-3">
         <img
           src={imgUrl}
@@ -82,7 +85,10 @@ const ProductCard = ({ product, onAddToCart }) => {
 
       {/* Add to cart hover button */}
       <button
-        onClick={() => onAddToCart(product)}
+        onClick={(e) => {
+          e.stopPropagation();
+          onAddToCart(product);
+        }}
         className="absolute bottom-4 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300 bg-orange-500 text-white px-4 py-2 rounded shadow-lg text-sm"
         aria-label={`Add ${product.name} to cart`}
       >
@@ -93,7 +99,7 @@ const ProductCard = ({ product, onAddToCart }) => {
 };
 
 // one horizontal category row
-const CategoryRow = ({ category, products }) => {
+const CategoryRow = ({ category, products, onAddToCart }) => {
   const rowRef = useRef(null);
   const autoRef = useRef(null);
 
@@ -131,10 +137,6 @@ const CategoryRow = ({ category, products }) => {
     el.scrollBy({ left: (cardWidth + 16) * 2, behavior: "smooth" });
   };
 
-  const handleAddToCart = (product) => {
-    alert(`Added "${product.name}" to cart (demo)`);
-  };
-
   return (
     <div className="mb-12">
       {/* Category title + scroll buttons */}
@@ -145,11 +147,7 @@ const CategoryRow = ({ category, products }) => {
             onClick={onPrev}
             className="w-9 h-9 rounded-full border bg-white shadow-sm hover:bg-gray-50 flex items-center justify-center"
           >
-            <svg
-              className="w-4 h-4 text-gray-700"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
+            <svg className="w-4 h-4 text-gray-700" viewBox="0 0 20 20" fill="currentColor">
               <path d="M12.3 16.3L7 11l5.3-5.3 1.4 1.4L9.8 11l3.9 3.9z" />
             </svg>
           </button>
@@ -157,11 +155,7 @@ const CategoryRow = ({ category, products }) => {
             onClick={onNext}
             className="w-9 h-9 rounded-full border bg-white shadow-sm hover:bg-gray-50 flex items-center justify-center"
           >
-            <svg
-              className="w-4 h-4 text-gray-700"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
+            <svg className="w-4 h-4 text-gray-700" viewBox="0 0 20 20" fill="currentColor">
               <path d="M7.7 3.7L13 9l-5.3 5.3-1.4-1.4L10.2 9 6.3 5.1z" />
             </svg>
           </button>
@@ -176,7 +170,7 @@ const CategoryRow = ({ category, products }) => {
       >
         {products.map((p) => (
           <div key={p.sku} className="flex-shrink-0">
-            <ProductCard product={p} onAddToCart={handleAddToCart} />
+            <ProductCard product={p} onAddToCart={onAddToCart} />
           </div>
         ))}
       </div>
@@ -185,7 +179,7 @@ const CategoryRow = ({ category, products }) => {
       <div className="text-center mt-6">
         <button
           className="px-6 py-2 bg-[#0B2347] text-white rounded-lg hover:bg-[#0b2347d8] transition-all"
-          onClick={() => alert(`Show all products for ${category}`)} // Replace this with navigation later
+          onClick={() => alert(`Show all products for ${category}`)}
         >
           See All {category} Products
         </button>
@@ -198,21 +192,18 @@ const CategoryRow = ({ category, products }) => {
 const Shop = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState("");
+  const navigate = useNavigate();
 
-  // fetch function moved outside so it can be reused (e.g. on window focus)
+  const userId = localStorage.getItem("user_id");
+
   const fetchAll = async () => {
     setLoading(true);
     try {
       const url = `${API_BASE}/fetch_all.php`;
-      console.log("Fetching from:", url);
-
-      // prevent cached responses so UI sees new DB entries
       const res = await fetch(url, { cache: "no-store" });
       const text = await res.text();
-      console.log("Raw response:", text);
-
       const data = JSON.parse(text);
-      console.log("Parsed data:", data);
 
       const processed = (data || []).map((p) => ({
         ...p,
@@ -231,12 +222,43 @@ const Shop = () => {
 
   useEffect(() => {
     fetchAll();
-
-    // re-fetch when the window/tab regains focus
-    const onFocus = () => fetchAll();
-    window.addEventListener("focus", onFocus);
-    return () => window.removeEventListener("focus", onFocus);
   }, []);
+
+  // ✅ Add to Cart logic
+  const handleAddToCart = async (product) => {
+    if (!userId) {
+      alert("Please login first!");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}/add_to_cart.php`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: userId,
+          product_id: product.id,
+          quantity: 1,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success || data.message === "Cart updated" || data.message === "Product added to cart") {
+        setMessage("✅ " + (data.message || "Added to cart successfully!"));
+      } else {
+        setMessage("❌ " + (data.message || "Failed to add to cart."));
+        console.error("Add to cart failed:", data);
+      }
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      setMessage("⚠️ Error connecting to server.");
+    }
+
+    // Hide message after 3 seconds
+    setTimeout(() => setMessage(""), 3000);
+  };
 
   // group products by category
   const grouped = CATEGORY_ORDER.reduce((acc, cat) => {
@@ -244,13 +266,18 @@ const Shop = () => {
     return acc;
   }, {});
 
-  // include unmatched categories
   const other = products.filter((p) => !CATEGORY_ORDER.includes(p.category));
   if (other.length) grouped["Other"] = other;
 
   return (
     <div className="max-w-[1200px] mx-auto my-12 px-4">
       <h1 className="text-3xl font-bold mb-8">Shop</h1>
+
+      {message && (
+        <div className="mb-6 text-center font-medium text-green-600 bg-green-50 border border-green-200 p-3 rounded-md">
+          {message}
+        </div>
+      )}
 
       {loading ? (
         <div className="text-center py-20">Loading products...</div>
@@ -259,7 +286,12 @@ const Shop = () => {
           {Object.entries(grouped).map(
             ([category, items]) =>
               items.length > 0 && (
-                <CategoryRow key={category} category={category} products={items} />
+                <CategoryRow
+                  key={category}
+                  category={category}
+                  products={items}
+                  onAddToCart={handleAddToCart}
+                />
               )
           )}
         </>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE = "https://putratraders.com/api"; // your backend API base
+const API_BASE = "https://putratraders.com/api"; // ✅ your backend API base
 
 const ProductCatalogue = () => {
   const [products, setProducts] = useState([]);
@@ -9,25 +9,22 @@ const ProductCatalogue = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [quantities, setQuantities] = useState({});
   const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState(null);
   const navigate = useNavigate();
 
-  // Fetch products from backend
+  // Fetch products
   const fetchProducts = async (category = "") => {
     try {
       setLoading(true);
       const url = category
         ? `${API_BASE}/fetch_by_category.php?category=${encodeURIComponent(category)}`
         : `${API_BASE}/fetch_all.php`;
-      // avoid cached responses so updates in the DB show up immediately
+
       const res = await fetch(url, { cache: "no-store" });
       const data = await res.json();
 
-      if (Array.isArray(data)) {
-        setProducts(data);
-      } else {
-        console.error("Unexpected response:", data);
-        setProducts([]);
-      }
+      if (Array.isArray(data)) setProducts(data);
+      else setProducts([]);
     } catch (err) {
       console.error("Error fetching products:", err);
       setProducts([]);
@@ -37,21 +34,21 @@ const ProductCatalogue = () => {
   };
 
   useEffect(() => {
-    fetchProducts(); // load all products on mount
+    fetchProducts();
 
-    // re-fetch when the user focuses the window/tab (helps pick up DB changes)
+    // Auto-refresh when tab regains focus
     const onFocus = () => fetchProducts();
     window.addEventListener("focus", onFocus);
     return () => window.removeEventListener("focus", onFocus);
   }, []);
 
-  // Convert price to number (handles "$16.90" or 16.9)
+  // Parse price (removes $ if present)
   const parsePrice = (priceStr) =>
     typeof priceStr === "string"
       ? parseFloat(priceStr.replace("$", ""))
       : parseFloat(priceStr);
 
-  // Sorting
+  // Sorting logic
   const sortedProducts = useMemo(() => {
     let sorted = [...products];
     if (sortOption === "rating") {
@@ -68,18 +65,75 @@ const ProductCatalogue = () => {
     return sorted;
   }, [sortOption, products]);
 
-  // Search Filter
+  // Filter by search
   const filteredProducts = sortedProducts.filter((product) =>
     product.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Quantity input handler
   const handleQuantityChange = (sku, value) => {
     setQuantities((prev) => ({ ...prev, [sku]: value }));
+  };
+
+  // ✅ ADD TO CART HANDLER
+  const handleAddToCart = async (product) => {
+    const user_id = localStorage.getItem("user_id"); // user id from login
+    const quantity = parseInt(quantities[product.sku] || 1, 10);
+
+    if (!user_id) {
+      alert("Please log in first!");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/add_to_cart.php`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id,
+          product_id: product.id, // or product.id depending on your DB
+          quantity,
+        }),
+      });
+
+      if (!res.ok) throw new Error(`Server error: ${res.status}`);
+
+      const data = await res.json();
+
+      if (data.success || data.message === "Cart updated" || data.message === "Product added to cart") {
+        setMessage("✅ " + (data.message || "Added to cart successfully!"));
+      } else {
+        setMessage("❌ " + (data.message || "Failed to add to cart."));
+        console.error("Add to cart failed:", data);
+      }
+
+      setTimeout(() => setMessage(null), 3000);
+    } catch (err) {
+      console.error("Error adding to cart:", err);
+      setMessage("❌ Could not connect to the server.");
+      setTimeout(() => setMessage(null), 3000);
+    }
   };
 
   return (
     <div className="w-[1300px] bg-white p-10 justify-center mx-auto my-20 rounded-lg shadow-md">
       <h1 className="text-2xl font-semibold mb-6">Product Catalogue</h1>
+
+      {/* ✅ Success / Error message */}
+      {message && (
+        <div
+          className={`text-center p-3 mb-4 rounded ${
+            message.startsWith("✅")
+              ? "bg-green-100 text-green-700"
+              : "bg-red-100 text-red-700"
+          }`}
+        >
+          {message}
+        </div>
+      )}
 
       {/* Sort + Search */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
@@ -146,7 +200,7 @@ const ProductCatalogue = () => {
             >
               <div className="col-span-2 text-gray-600">{product.sku}</div>
 
-              {/* Image (click to open ProductDetails) */}
+              {/* Image */}
               <div
                 className="col-span-2 cursor-pointer"
                 onClick={() => navigate(`/product/${product.sku}`)}
@@ -164,7 +218,7 @@ const ProductCatalogue = () => {
                 />
               </div>
 
-              {/* Name (click to open ProductDetails) */}
+              {/* Name */}
               <div
                 className="col-span-3 text-gray-800 cursor-pointer hover:text-blue-600"
                 onClick={() => navigate(`/product/${product.sku}`)}
@@ -189,7 +243,10 @@ const ProductCatalogue = () => {
               </div>
 
               <div className="col-span-2 text-center">
-                <button className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 transition">
+                <button
+                  onClick={() => handleAddToCart(product)}
+                  className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 transition"
+                >
                   Add to cart
                 </button>
               </div>

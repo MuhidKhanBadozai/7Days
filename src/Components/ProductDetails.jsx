@@ -15,23 +15,23 @@ const ProductDetails = () => {
   const [mainImage, setMainImage] = useState("");
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
+  const [message, setMessage] = useState("");
+
+  // Example: logged-in user ID stored in localStorage
+  const userId = localStorage.getItem("user_id");
 
   // Fetch product details by SKU
   const fetchProduct = async (skuParam) => {
     try {
       setLoading(true);
-      // add cache: 'no-store' so updates to the product show up when re-fetched
-      const res = await fetch(
-        `${API_BASE}/fetch_product_by_sku.php?sku=${skuParam}`,
-        { cache: "no-store" }
-      );
+      const res = await fetch(`${API_BASE}/fetch_product_by_sku.php?sku=${skuParam}`, {
+        cache: "no-store",
+      });
       const data = await res.json();
-      console.log("Fetched product data:", data);
       if (data && data.sku) {
         setProduct(data);
         setMainImage(buildFullImageUrl(data.image_main || data.image_url));
       } else {
-        console.error("Product not found:", data);
         setProduct(null);
       }
     } catch (err) {
@@ -43,18 +43,46 @@ const ProductDetails = () => {
 
   useEffect(() => {
     if (sku) fetchProduct(sku);
-
-    // re-fetch this product when the window/tab regains focus
-    const onFocus = () => {
-      if (sku) fetchProduct(sku);
-    };
-    window.addEventListener("focus", onFocus);
-    return () => window.removeEventListener("focus", onFocus);
   }, [sku]);
+
+  // ✅ Add to Cart Function
+  const handleAddToCart = async () => {
+    if (!userId) {
+      alert("Please login first!");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}/add_to_cart.php`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: userId,
+          product_id: product.id,
+          quantity: quantity,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success || data.message === "Cart updated" || data.message === "Product added to cart") {
+        setMessage("✅ " + (data.message || "Added to cart successfully!"));
+      } else {
+        setMessage("❌ " + (data.message || "Failed to add to cart."));
+        console.error("Add to cart failed:", data);
+      }
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      setMessage("⚠️ Error connecting to server.");
+    }
+  };
 
   if (loading) {
     return (
-      <div className="text-center py-20 text-gray-600 text-lg">Loading product...</div>
+      <div className="text-center py-20 text-gray-600 text-lg">
+        Loading product...
+      </div>
     );
   }
 
@@ -95,9 +123,10 @@ const ProductDetails = () => {
                   src={buildFullImageUrl(img)}
                   alt={`Thumbnail ${idx}`}
                   onClick={() => setMainImage(buildFullImageUrl(img))}
-                  className={`w-20 h-20 object-contain border rounded-md cursor-pointer hover:ring-2 hover:ring-[#0B2347] transition ${
-                    mainImage === buildFullImageUrl(img) ? "ring-2 ring-[#0B2347]" : ""
-                  }`}
+                  className={`w-20 h-20 object-contain border rounded-md cursor-pointer hover:ring-2 hover:ring-[#0B2347] transition ${mainImage === buildFullImageUrl(img)
+                      ? "ring-2 ring-[#0B2347]"
+                      : ""
+                    }`}
                 />
               ))}
           </div>
@@ -109,7 +138,9 @@ const ProductDetails = () => {
           <p className="text-gray-700 text-sm">SKU: {product.sku}</p>
 
           <div className="flex items-center gap-2">
-            <p className="text-3xl font-bold text-[#0B2347]">${product.price_200_500}</p>
+            <p className="text-3xl font-bold text-[#0B2347]">
+              ${product.price_200_500}
+            </p>
             <span className="text-gray-500 text-sm">(200–500 units)</span>
           </div>
 
@@ -132,9 +163,14 @@ const ProductDetails = () => {
             />
           </div>
 
-          <button className="bg-orange-500 text-white px-6 py-3 mt-6 rounded-md hover:bg-orange-600 transition">
+          <button
+            onClick={handleAddToCart}
+            className="bg-orange-500 text-white px-6 py-3 mt-6 rounded-md hover:bg-orange-600 transition"
+          >
             Add to Cart
           </button>
+
+          {message && <p className="text-green-600 mt-2">{message}</p>}
         </div>
       </div>
 
