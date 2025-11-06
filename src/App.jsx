@@ -12,6 +12,10 @@ import Category from "./Components/Category.jsx";
 import ProductDetails from "./Components/ProductDetails.jsx";
 import ContactUs from "./Pages/ContactUs.jsx";
 import AboutUs from "./Pages/AboutUs.jsx";
+import PaymentProcess from "./Pages/PaymentProcess.jsx";
+import PrivacyPolicy from "./Pages/PrivacyPolicy.jsx";
+import TermsOfService from "./Pages/TermsCondition.jsx";
+import ReturnsRefund from "./Pages/ReturnsRefund.jsx";
 
 function App() {
   return (
@@ -30,6 +34,10 @@ function App() {
         <Route path="/product/:sku" element={<ProductDetails />} />
         <Route path="/contactus" element={<ContactUs />} />
         <Route path="/aboutus" element={<AboutUs />} />
+        <Route path="/paymentprocess" element={<PaymentProcess />} />
+        <Route path="/privacypolicy" element={<PrivacyPolicy />} />
+        <Route path="/termsofservice" element={<TermsOfService />} />
+        <Route path="/returnsrefund" element={<ReturnsRefund />} />
       </Routes>
 
       {/* Footer is outside Routes so it shows on every page */}
