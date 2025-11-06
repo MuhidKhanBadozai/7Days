@@ -23,6 +23,10 @@ const Footer = () => {
     fetchCategories();
   }, []);
 
+  const handleLinkClick = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <footer className="bg-[#0B2347] text-white py-10 px-6 md:px-16">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-6 border-b border-gray-700 pb-10">
@@ -62,7 +66,7 @@ const Footer = () => {
                   <Link
                     to={`/category/${encodeURIComponent(cat)}`}
                     className="hover:text-[#f9b233] block truncate"
-                    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                    onClick={handleLinkClick}
                   >
                     {cat}
                   </Link>
@@ -78,12 +82,44 @@ const Footer = () => {
         <div>
           <h3 className="font-semibold text-lg mb-4">Quick Links</h3>
           <ul className="space-y-2 text-sm">
-            <li><a href="#" className="hover:text-[#f9b233]">Contact Us</a></li>
-            <li><a href="#" className="hover:text-[#f9b233]">About Us</a></li>
-            <li><a href="#" className="hover:text-[#f9b233]">Privacy Policy</a></li>
-            <li><a href="#" className="hover:text-[#f9b233]">Returns & Refund</a></li>
-            <li><a href="#" className="hover:text-[#f9b233]">Terms & Condition</a></li>
-            <li><a href="#" className="hover:text-[#f9b233]">Payment Process</a></li>
+            <li><a href="/contactus" className="hover:text-[#f9b233]">Contact Us</a></li>
+            <li><a href="/aboutus" className="hover:text-[#f9b233]">About Us</a></li>
+            <li>
+              <Link 
+                to="/privacypolicy" 
+                className="hover:text-[#f9b233]"
+                onClick={handleLinkClick}
+              >
+                Privacy Policy
+              </Link>
+            </li>
+            <li>
+              <Link 
+                to="/returnsrefund" 
+                className="hover:text-[#f9b233]"
+                onClick={handleLinkClick}
+              >
+                Returns & Refund
+              </Link>
+            </li>
+            <li>
+              <Link 
+                to="/termsofservice" 
+                className="hover:text-[#f9b233]"
+                onClick={handleLinkClick}
+              >
+                Terms & Condition
+              </Link>
+            </li>
+            <li>
+              <Link 
+                to="/paymentprocess" 
+                className="hover:text-[#f9b233]"
+                onClick={handleLinkClick}
+              >
+                Payment Process
+              </Link>
+            </li>
           </ul>
         </div>
 
