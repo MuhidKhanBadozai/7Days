@@ -34,6 +34,8 @@ const Category = () => {
   const [visibleCount, setVisibleCount] = useState(12);
   const [priceRange, setPriceRange] = useState([0, 100]);
   const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
 
   useEffect(() => {
     const fetchCategory = async () => {
@@ -61,6 +63,25 @@ const Category = () => {
     };
     fetchCategory();
   }, [categoryName]);
+
+  // fetch available categories for the left select (mirror Footer/Navbar)
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setCategoriesLoading(true);
+        const res = await fetch("https://putratraders.com/api/fetch_all_categories.php");
+        const data = await res.json();
+        if (Array.isArray(data)) setCategories(data);
+        else setCategories([]);
+      } catch (err) {
+        console.error('Error fetching categories for Category page:', err);
+        setCategories([]);
+      } finally {
+        setCategoriesLoading(false);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const handleAddToCart = (product) => {
     try {
@@ -103,9 +124,9 @@ const Category = () => {
             value={categoryName}
             onChange={(e) => navigate(`/category/${e.target.value}`)}
           >
-            {loading ? (
+            {categoriesLoading ? (
               <option>Loading categories...</option>
-            ) : categories.length > 0 ? (
+            ) : categories && categories.length > 0 ? (
               categories.map((cat, idx) => (
                 <option key={idx} value={cat}>{cat}</option>
               ))

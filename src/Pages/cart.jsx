@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const API_BASE = "https://putratraders.com/api";
 
@@ -9,6 +10,7 @@ const Cart = () => {
   const [updatingItems, setUpdatingItems] = useState(new Set());
 
   const userId = localStorage.getItem("user_id");
+  const navigate = useNavigate();
 
   const loadCart = () => {
     try {
@@ -434,6 +436,19 @@ const Cart = () => {
               <button 
                 className="w-full px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={cartItems.length === 0 || updatingItems.size > 0}
+                onClick={() => {
+                  // prefer full user object if present, fallback to user_id
+                  const user = localStorage.getItem('user');
+                  const uid = user ? JSON.parse(user).id || JSON.parse(user).user_id || null : (localStorage.getItem('user_id') || null);
+                  if (!user && !uid) {
+                    // notify and redirect to login; preserve intended page in query
+                    window.dispatchEvent(new CustomEvent('cart-notification', { detail: { message: 'Please log in to proceed to checkout', type: 'error' } }));
+                    navigate(`/login?redirect=${encodeURIComponent('/checkout')}`);
+                    return;
+                  }
+                  // user logged in -> proceed to checkout
+                  navigate('/checkout');
+                }}
               >
                 {updatingItems.size > 0 ? 'Updating...' : 'Proceed to Checkout'}
               </button>

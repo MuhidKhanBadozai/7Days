@@ -147,7 +147,7 @@ export default function Navbar() {
                     <Search className="absolute right-3 top-3 text-gray-500" size={18} />
                 </div>
 
-                {/* mobile icons (hamburger + search) */}
+                {/* mobile icons (search + cart + hamburger) */}
                 <div className="flex items-center gap-2 md:hidden">
                     <button
                         onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
@@ -156,6 +156,21 @@ export default function Navbar() {
                     >
                         <Search size={18} />
                     </button>
+
+                    {/* Cart button visible on mobile, to the right of search */}
+                    <button
+                        onClick={() => navigate('/cart')}
+                        className="relative p-2 rounded-md text-[#0B2347] hover:bg-gray-100"
+                        aria-label="Open cart"
+                    >
+                        <ShoppingBag size={18} />
+                        {cartCount > 0 && (
+                            <span className="absolute -top-1 -right-1 text-[10px] bg-[#0B2347] text-white font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                                {cartCount}
+                            </span>
+                        )}
+                    </button>
+
                     <button
                         onClick={() => setMobileMenuOpen(true)}
                         className="p-2 rounded-md text-[#0B2347] hover:bg-gray-100"
@@ -322,6 +337,19 @@ export default function Navbar() {
                                 <Link to="/contactus" onClick={() => setMobileMenuOpen(false)} className="text-lg font-medium">Contact Us</Link>
                                 <Link to="/aboutus" onClick={() => setMobileMenuOpen(false)} className="text-lg font-medium">About Us</Link>
                             </nav>
+
+                            {/* Mobile auth/cart actions */}
+                            <div className="mt-4 flex items-center gap-3">
+                                {!isLoggedIn ? (
+                                    <>
+                                        <button onClick={() => { navigate('/login'); setMobileMenuOpen(false); }} className="flex-1 px-3 py-2 bg-[#0B2347] text-white rounded">Login</button>
+                                        <button onClick={() => { navigate('/signup'); setMobileMenuOpen(false); }} className="flex-1 px-3 py-2 bg-[#f9b233] text-[#0B2347] rounded">Register</button>
+                                    </>
+                                ) : (
+                                    <button onClick={() => { navigate('/profile'); setMobileMenuOpen(false); }} className="flex-1 px-3 py-2 bg-[#0B2347] text-white rounded">Account</button>
+                                )}
+                                <button onClick={() => { navigate('/cart'); setMobileMenuOpen(false); }} className="px-3 py-2 bg-white text-[#0B2347] rounded border">Cart</button>
+                            </div>
 
                             <div className="mt-6">
                                 <h4 className="text-sm font-semibold text-gray-600 mb-2">Categories</h4>

@@ -77,7 +77,7 @@ const reviews = [
 
 const Reviews = () => {
   return (
-    <div className="relative flex h-[80vh] w-full flex-col items-center justify-center overflow-hidden bg-gray-50 font-sans">
+  <div className="relative flex h-[80vh] w-full flex-col items-center justify-center overflow-hidden bg-gray-50 font-sans mb-12">
       {/* Header Section */}
       <div className="text-center space-y-4 mb-12 px-4 z-10 relative">
         <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900">
