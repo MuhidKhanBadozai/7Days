@@ -176,13 +176,13 @@ const FeaturedProducts = () => {
               >
                 {/* Image */}
                 <div
-                  className="relative w-full h-48 md:h-56 flex items-center justify-center mb-5 overflow-hidden cursor-pointer"
+                  className="relative w-full h-36 md:h-48 flex items-center justify-center mb-5 overflow-hidden cursor-pointer"
                   onClick={() => handleProductClick(product.sku)}
                 >
                   <img
                     src={buildFullImageUrl(product.image_url || product.image_main)}
                     alt={product.name}
-                    className="max-w-full h-auto max-h-40 md:max-h-48 object-contain transition-transform duration-500 group-hover:scale-110"
+                    className="max-w-full h-auto max-h-28 md:max-h-40 object-contain transition-transform duration-500 group-hover:scale-110"
                     onError={(e) => {
                       e.target.src = "/placeholder.png";
                     }}
@@ -240,7 +240,7 @@ const FeaturedProducts = () => {
                     min="1"
                     value={quantities[product.sku] || 1}
                     onChange={(e) => handleQuantityChange(product.sku, e.target.value)}
-                    className="w-16 text-center border border-gray-300 rounded-md p-1 focus:ring-1 focus:ring-[#0B2347] text-sm"
+                    className="w-12 text-center border border-gray-300 rounded-md p-1 focus:ring-1 focus:ring-[#0B2347] text-sm"
                     onClick={(e) => e.stopPropagation()}
                   />
                   <button
@@ -248,7 +248,7 @@ const FeaturedProducts = () => {
                       e.stopPropagation();
                       handleAddToCart(product);
                     }}
-                    className="bg-orange-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-orange-600 transition-colors flex items-center gap-1"
+                    className="bg-orange-500 text-white px-3 py-1 rounded-lg text-sm font-semibold hover:bg-orange-600 transition-colors flex items-center gap-1"
                   >
                     <ShoppingCart size={16} />
                     Add
