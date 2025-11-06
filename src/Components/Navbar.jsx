@@ -98,13 +98,13 @@ export default function Navbar() {
                     <img
                         src="/logo.jpg"
                         alt="Logo"
-                        className="h-10 md:h-12 w-auto object-contain"
+                        className="h-12 md:h-16 w-auto object-contain"
                     />
                 </div>
 
                 {/* Search Bar */}
                 {/* desktop search */}
-                <div className="hidden md:flex flex-grow mx-4 w-full max-w-md relative">
+                <div className="hidden md:flex flex-grow mx-4 w-full max-w-xl relative">
                     <input
                         type="text"
                         placeholder="Search for products"
