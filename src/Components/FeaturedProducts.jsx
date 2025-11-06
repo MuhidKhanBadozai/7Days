@@ -119,7 +119,7 @@ const FeaturedProducts = () => {
     return (
       <section className="w-full py-16 bg-white">
         <div className="max-w-[1500px] mx-auto px-8">
-          <h2 className="text-8xl font-bold text-center text-[#0B2347] mb-12">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center text-[#0B2347] mb-8">
             Featured Products
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 justify-items-center">
@@ -145,7 +145,7 @@ const FeaturedProducts = () => {
     <section className="w-full py-16 bg-white">
       <div className="max-w-[1500px] mx-auto px-8">
         {/* Title */}
-        <h2 className="text-8xl font-bold text-center text-[#0B2347] mb-12">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center text-[#0B2347] mb-8">
           Featured Products
         </h2>
 

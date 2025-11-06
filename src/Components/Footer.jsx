@@ -10,7 +10,7 @@ const Footer = () => {
           <img
             src="/logo.jpg"
             alt="Brand Masters Wholesale"
-            className="w-15 md:w-25 h-25"
+            className="w-32 md:w-48 h-auto object-contain"
           />
           <div className="flex items-start gap-2">
             <MapPin size={18} className="mt-1 text-[#f9b233]" />

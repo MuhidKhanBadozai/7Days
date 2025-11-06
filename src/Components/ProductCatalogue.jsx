@@ -119,8 +119,8 @@ const ProductCatalogue = () => {
   };
 
   return (
-    <div className="w-[1300px] bg-white p-10 justify-center mx-auto my-20 rounded-lg shadow-md">
-      <h1 className="text-2xl font-semibold mb-6">Product Catalogue</h1>
+    <div className="w-full bg-white p-6 md:p-10 justify-center mx-auto my-8 rounded-lg shadow-md max-w-7xl">
+      <h1 className="text-2xl md:text-3xl font-semibold mb-4">Product Catalogue</h1>
 
       {/* ✅ Success / Error message */}
       {message && (
@@ -182,8 +182,8 @@ const ProductCatalogue = () => {
         <p className="text-center py-10 text-gray-600">No products found.</p>
       ) : (
         <>
-          {/* Table Header */}
-          <div className="grid grid-cols-12 font-semibold text-gray-700 border-b py-3">
+          {/* Table Header (hidden on small screens) */}
+          <div className="hidden md:grid grid-cols-12 font-semibold text-gray-700 border-b py-3">
             <div className="col-span-2">SKU</div>
             <div className="col-span-2">IMAGE</div>
             <div className="col-span-3">NAME</div>
@@ -196,13 +196,16 @@ const ProductCatalogue = () => {
           {filteredProducts.map((product) => (
             <div
               key={product.sku}
-              className="grid grid-cols-12 items-center border-b py-3 hover:bg-gray-50 transition"
+              className="grid grid-cols-1 md:grid-cols-12 items-start md:items-center border-b py-4 hover:bg-gray-50 transition gap-3"
             >
-              <div className="col-span-2 text-gray-600">{product.sku}</div>
+              <div className="md:col-span-2 text-gray-600">
+                <div className="text-sm md:hidden text-gray-500">SKU</div>
+                <div>{product.sku}</div>
+              </div>
 
               {/* Image */}
               <div
-                className="col-span-2 cursor-pointer"
+                className="md:col-span-2 cursor-pointer flex items-center justify-start md:justify-center"
                 onClick={() => navigate(`/product/${product.sku}`)}
               >
                 <img
@@ -214,23 +217,26 @@ const ProductCatalogue = () => {
                       : "/placeholder.png"
                   }
                   alt={product.name}
-                  className="w-16 h-16 object-contain mx-auto hover:scale-105 transition-transform"
+                  className="w-20 h-20 md:w-16 md:h-16 object-contain mx-auto hover:scale-105 transition-transform"
                 />
               </div>
 
               {/* Name */}
               <div
-                className="col-span-3 text-gray-800 cursor-pointer hover:text-blue-600"
+                className="md:col-span-3 text-gray-800 cursor-pointer hover:text-blue-600"
                 onClick={() => navigate(`/product/${product.sku}`)}
               >
-                {product.name}
+                <div className="text-sm md:hidden text-gray-500">Name</div>
+                <div className="font-medium">{product.name}</div>
               </div>
 
-              <div className="col-span-1 text-center font-semibold">
-                ${product.price_200_500}
+              <div className="md:col-span-1 text-left md:text-center font-semibold">
+                <div className="text-sm md:hidden text-gray-500">Price</div>
+                <div>${product.price_200_500}</div>
               </div>
 
-              <div className="col-span-2 text-center">
+              <div className="md:col-span-2 text-left md:text-center">
+                <div className="text-sm md:hidden text-gray-500">Quantity</div>
                 <input
                   type="number"
                   min="1"
@@ -238,14 +244,15 @@ const ProductCatalogue = () => {
                   onChange={(e) =>
                     handleQuantityChange(product.sku, e.target.value)
                   }
-                  className="w-16 text-center border border-gray-300 rounded-md p-1 focus:ring-1 focus:ring-[#0B2347]"
+                  className="w-24 md:w-16 text-center border border-gray-300 rounded-md p-1 focus:ring-1 focus:ring-[#0B2347]"
                 />
               </div>
 
-              <div className="col-span-2 text-center">
+              <div className="md:col-span-2 text-left md:text-center">
+                <div className="text-sm md:hidden text-gray-500">Action</div>
                 <button
                   onClick={() => handleAddToCart(product)}
-                  className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 transition"
+                  className="mt-1 md:mt-0 bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 transition"
                 >
                   Add to cart
                 </button>
