@@ -10,13 +10,20 @@ const Cart = () => {
 
   const userId = localStorage.getItem("user_id");
 
-  useEffect(() => {
-    // Always load local cart; server integration removed
+  const loadCart = () => {
     try {
+      setLoading(true);
       const raw = localStorage.getItem('local_cart');
-      const items = Array.isArray(JSON.parse(raw || '[]')) ? JSON.parse(raw || '[]') : [];
+      let items = [];
+      try {
+        items = JSON.parse(raw || '[]');
+        if (!Array.isArray(items)) items = [];
+      } catch (e) {
+        items = [];
+      }
+
       const normalized = items.map((it, idx) => ({
-        cart_id: it.cart_id || `local-${it.sku || idx}`,
+        cart_id: `local-${it.sku || idx}`,  // Always use local- prefix
         sku: it.sku,
         name: it.name,
         price: Number(it.price) || 0,
@@ -33,7 +40,19 @@ const Cart = () => {
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  };
+
+  // Load cart on mount and when storage changes
+  useEffect(() => {
+    loadCart();
+    const handleStorageChange = (e) => {
+      if (e.key === 'local_cart') {
+        loadCart();
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   const fetchCart = async () => {
     try {
@@ -121,6 +140,12 @@ const Cart = () => {
           cart[idx].quantity = newQuantity;
           localStorage.setItem('local_cart', JSON.stringify(cart));
           setCartItems(prev => prev.map(item => (item.cart_id === cart_id ? { ...item, quantity: newQuantity } : item)));
+          window.dispatchEvent(new CustomEvent('cart-notification', { 
+            detail: { 
+              message: `Updated quantity of ${cart[idx].name}`, 
+              type: 'success' 
+            } 
+          }));
         }
       } catch (err) {
         console.error('Error updating local cart', err);
@@ -171,10 +196,40 @@ const Cart = () => {
       // remove from local cart
       try {
         const raw = localStorage.getItem('local_cart');
-        const cart = Array.isArray(JSON.parse(raw || '[]')) ? JSON.parse(raw || '[]') : [];
-        const newCart = cart.filter(i => !( (i.cart_id && i.cart_id === cart_id) || i.sku === cart_id || (`local-${i.sku}`) === cart_id ));
-        localStorage.setItem('local_cart', JSON.stringify(newCart));
-        setCartItems(prev => prev.filter(item => item.cart_id !== cart_id));
+        if (!raw) {
+          throw new Error('Cart not found');
+        }
+
+        let cart = JSON.parse(raw);
+        if (!Array.isArray(cart)) cart = [];
+
+        // Find the item to remove by matching against its SKU
+        const originalItem = cartItems.find(item => item.cart_id === cart_id);
+        if (!originalItem) {
+          throw new Error('Item not found in cart view');
+        }
+
+        const itemIdx = cart.findIndex(i => i.sku === originalItem.sku);
+        if (itemIdx === -1) {
+          throw new Error('Item not found in local cart');
+        }
+
+        const itemToRemove = cart[itemIdx];
+        
+        // Remove the item
+        cart.splice(itemIdx, 1);
+        localStorage.setItem('local_cart', JSON.stringify(cart));
+        
+        // Update UI
+        setCartItems(prev => prev.filter(item => item.sku !== originalItem.sku));
+
+        // Show notification
+        window.dispatchEvent(new CustomEvent('cart-notification', {
+          detail: {
+            message: `Removed ${itemToRemove.name} from cart`,
+            type: 'success'
+          }
+        }));
       } catch (err) {
         console.error('Error removing from local cart', err);
         setError('Failed to remove item');

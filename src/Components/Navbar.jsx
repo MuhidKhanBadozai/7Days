@@ -22,6 +22,8 @@ export default function Navbar() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
     const [toasts, setToasts] = useState([]);
+    const [cartCount, setCartCount] = useState(0);
+    const [cartTotal, setCartTotal] = useState(0);
     const navigate = useNavigate();
 
     // ✅ Fetch categories + check login
@@ -59,7 +61,28 @@ export default function Navbar() {
             } else {
                 setIsLoggedIn(false);
             }
+
+            // Also update cart data when storage changes
+            const cartData = localStorage.getItem('local_cart');
+            if (cartData) {
+                try {
+                    const cart = JSON.parse(cartData);
+                    const itemCount = cart.reduce((sum, item) => sum + (parseInt(item.quantity) || 0), 0);
+                    const total = cart.reduce((sum, item) => sum + ((parseFloat(item.price) || 0) * (parseInt(item.quantity) || 0)), 0);
+                    setCartCount(itemCount);
+                    setCartTotal(total);
+                } catch (err) {
+                    console.error('Error parsing cart:', err);
+                }
+            } else {
+                setCartCount(0);
+                setCartTotal(0);
+            }
         };
+
+        // Initial load
+        handleStorageChange();
+        
         window.addEventListener("storage", handleStorageChange);
         return () => window.removeEventListener("storage", handleStorageChange);
     }, []);
@@ -71,6 +94,17 @@ export default function Navbar() {
             const id = Date.now() + Math.random();
             setToasts((t) => [...t, { id, message, type }]);
             setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 3500);
+            
+            // Update cart count and total whenever cart is modified
+            const cartData = localStorage.getItem('local_cart');
+            if (cartData) {
+                const cart = JSON.parse(cartData);
+                setCartCount(cart.reduce((sum, item) => sum + (item.quantity || 0), 0));
+                setCartTotal(cart.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0));
+            } else {
+                setCartCount(0);
+                setCartTotal(0);
+            }
         };
         window.addEventListener("cart-notification", handler);
         return () => window.removeEventListener("cart-notification", handler);
@@ -198,10 +232,12 @@ export default function Navbar() {
                         className="relative flex items-center bg-[#0B2347] text-white rounded-full px-2 py-2 hover:bg-white hover:text-[#0B2347] transition"
                     >
                         <ShoppingBag size={18} />
-                        <span className="ml-2 text-sm">$0.00</span>
-                        <span className="absolute -top-1 -right-1 text-xs bg-white text-[#0B2347] font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                            0
-                        </span>
+                        <span className="ml-2 text-sm">${cartTotal.toFixed(2)}</span>
+                        {cartCount > 0 && (
+                            <span className="absolute -top-1 -right-1 text-xs bg-white text-[#0B2347] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                                {cartCount}
+                            </span>
+                        )}
                     </button>
 
                 </div>

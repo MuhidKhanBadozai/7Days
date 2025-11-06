@@ -63,7 +63,25 @@ const Category = () => {
   }, [categoryName]);
 
   const handleAddToCart = (product) => {
-    alert(`Added "${product.name}" to cart (demo)`);
+    try {
+      const key = 'local_cart';
+      const raw = localStorage.getItem(key);
+      const cart = Array.isArray(JSON.parse(raw || '[]')) ? JSON.parse(raw || '[]') : [];
+      const price = product.price_200_500 || product.price || 0;
+      const img = buildFullImageUrl(product.image_url || product.image_main);
+      const existing = cart.find((i) => i.sku === product.sku);
+      if (existing) {
+        existing.quantity = (existing.quantity || 0) + 1;
+        window.dispatchEvent(new CustomEvent('cart-notification', { detail: { message: `${product.name} quantity updated in cart`, type: 'success' } }));
+      } else {
+        cart.push({ sku: product.sku, id: product.id || product.product_id || null, name: product.name, price, quantity: 1, image: img });
+        window.dispatchEvent(new CustomEvent('cart-notification', { detail: { message: `${product.name} added to cart`, type: 'success' } }));
+      }
+      localStorage.setItem(key, JSON.stringify(cart));
+    } catch (err) {
+      console.error('Error updating local cart', err);
+      window.dispatchEvent(new CustomEvent('cart-notification', { detail: { message: `Failed to update cart`, type: 'error' } }));
+    }
   };
 
   const filtered = products.filter(
@@ -85,12 +103,15 @@ const Category = () => {
             value={categoryName}
             onChange={(e) => navigate(`/category/${e.target.value}`)}
           >
-            <option>Automotive</option>
-            <option>Beauty and Personal Care</option>
-            <option>Perfumes</option>
-            <option>Grocery and Gourmet Food</option>
-            <option>Health and Household</option>
-            <option>Home and Kitchen</option>
+            {loading ? (
+              <option>Loading categories...</option>
+            ) : categories.length > 0 ? (
+              categories.map((cat, idx) => (
+                <option key={idx} value={cat}>{cat}</option>
+              ))
+            ) : (
+              <option>No categories found</option>
+            )}
           </select>
         </div>
 
