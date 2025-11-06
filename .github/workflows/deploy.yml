@@ -30,8 +30,8 @@ jobs:
           server: ${{ secrets.HOSTINGER_HOST }}
           username: ${{ secrets.HOSTINGER_USER }}
           password: ${{ secrets.HOSTINGER_PASS }}
-          local-dir: ./dist/   # or ./build/ if that's your folder
-          server-dir: /public_html/
+          local-dir: ./dist/
+          server-dir: domains/putratraders.com/public_html/
           exclude: |
             api/**
             .htaccess
