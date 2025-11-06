@@ -30,5 +30,8 @@ jobs:
           server: ${{ secrets.HOSTINGER_HOST }}
           username: ${{ secrets.HOSTINGER_USER }}
           password: ${{ secrets.HOSTINGER_PASS }}
-          local-dir: ./dist
+          local-dir: ./dist/
           server-dir: /public_html/
+          exclude: |
+            api/**
+            .htaccess
