@@ -1,7 +1,28 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { MapPin, Phone, Mail } from "lucide-react";
 
 const Footer = () => {
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch("https://putratraders.com/api/fetch_all_categories.php");
+        const data = await res.json();
+        if (Array.isArray(data)) setCategories(data.slice(0, 6));
+      } catch (err) {
+        console.error("Error fetching footer categories:", err);
+        setCategories([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
   return (
     <footer className="bg-[#0B2347] text-white py-10 px-6 md:px-16">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-6 border-b border-gray-700 pb-10">
@@ -30,12 +51,26 @@ const Footer = () => {
         <div>
           <h3 className="font-semibold text-lg mb-4">Categories</h3>
           <ul className="space-y-2 text-sm">
-            <li><a href="#" className="hover:text-[#f9b233]">Automotive</a></li>
-            <li><a href="#" className="hover:text-[#f9b233]">Health & Household</a></li>
-            <li><a href="#" className="hover:text-[#f9b233]">Home and Kitchen</a></li>
-            <li><a href="#" className="hover:text-[#f9b233]">Grocery & Gourmet Food</a></li>
-            <li><a href="#" className="hover:text-[#f9b233]">Beauty & Personal Care</a></li>
-            <li><a href="#" className="hover:text-[#f9b233]">Clothing, Shoes & Jewelry</a></li>
+            {loading ? (
+              // show skeleton placeholders while loading
+              Array.from({ length: 6 }).map((_, i) => (
+                <li key={i} className="h-3 bg-white/10 rounded w-3/4 animate-pulse" />
+              ))
+            ) : categories && categories.length > 0 ? (
+              categories.map((cat, idx) => (
+                <li key={idx}>
+                  <Link
+                    to={`/category/${encodeURIComponent(cat)}`}
+                    className="hover:text-[#f9b233] block truncate"
+                    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                  >
+                    {cat}
+                  </Link>
+                </li>
+              ))
+            ) : (
+              <li className="text-sm text-gray-300">No categories available</li>
+            )}
           </ul>
         </div>
 

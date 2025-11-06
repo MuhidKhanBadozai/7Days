@@ -45,35 +45,24 @@ const ProductDetails = () => {
   }, [sku]);
 
   const handleAddToCart = async () => {
-    if (!userId) {
-      alert("Please login first!");
-      navigate("/login");
-      return;
-    }
-
     try {
-      const response = await fetch(`${API_BASE}/add_to_cart.php`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          user_id: userId,
-          product_id: product.id,
-          quantity: quantity,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.success || data.message === "Cart updated" || data.message === "Product added to cart") {
-        setMessage("✅ " + (data.message || "Added to cart successfully!"));
-        setTimeout(() => setMessage(""), 3000);
+      const key = 'local_cart';
+      const raw = localStorage.getItem(key);
+      const cart = Array.isArray(JSON.parse(raw || '[]')) ? JSON.parse(raw || '[]') : [];
+      const price = product.price_200_500 || product.price || 0;
+      const img = buildFullImageUrl(product.image_main || product.image_url);
+      const existing = cart.find((i) => i.sku === product.sku);
+      if (existing) {
+        existing.quantity = (existing.quantity || 0) + quantity;
+        window.dispatchEvent(new CustomEvent('cart-notification', { detail: { message: `${product.name} quantity updated in cart`, type: 'success' } }));
       } else {
-        setMessage("❌ " + (data.message || "Failed to add to cart."));
-        console.error("Add to cart failed:", data);
+        cart.push({ sku: product.sku, id: product.id || null, name: product.name, price, quantity, image: img });
+        window.dispatchEvent(new CustomEvent('cart-notification', { detail: { message: `${product.name} added to cart`, type: 'success' } }));
       }
-    } catch (error) {
-      console.error("Error adding to cart:", error);
-      setMessage("⚠️ Error connecting to server.");
+      localStorage.setItem(key, JSON.stringify(cart));
+    } catch (err) {
+      console.error('Error updating local cart', err);
+      window.dispatchEvent(new CustomEvent('cart-notification', { detail: { message: `Failed to update cart`, type: 'error' } }));
     }
   };
 

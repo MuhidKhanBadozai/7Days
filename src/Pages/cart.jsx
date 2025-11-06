@@ -11,14 +11,28 @@ const Cart = () => {
   const userId = localStorage.getItem("user_id");
 
   useEffect(() => {
-    if (!userId) {
-      console.warn("No user_id found in localStorage");
-      setError("Please log in to view your cart");
+    // Always load local cart; server integration removed
+    try {
+      const raw = localStorage.getItem('local_cart');
+      const items = Array.isArray(JSON.parse(raw || '[]')) ? JSON.parse(raw || '[]') : [];
+      const normalized = items.map((it, idx) => ({
+        cart_id: it.cart_id || `local-${it.sku || idx}`,
+        sku: it.sku,
+        name: it.name,
+        price: Number(it.price) || 0,
+        quantity: Number(it.quantity) || 1,
+        image_url: it.image || it.image_url || '',
+        isLocal: true,
+      }));
+      setCartItems(normalized);
+      setError("");
+    } catch (err) {
+      console.error('Error reading local cart', err);
+      setCartItems([]);
+      setError('Failed to load local cart');
+    } finally {
       setLoading(false);
-      return;
     }
-
-    fetchCart();
   }, [userId]);
 
   const fetchCart = async () => {
@@ -53,87 +67,118 @@ const Cart = () => {
 
   const updateQuantity = async (cart_id, newQuantity) => {
     if (newQuantity < 1) return;
+    // if logged in, call server; otherwise update local cart in localStorage
+    if (userId) {
+      try {
+        setUpdatingItems(prev => new Set(prev).add(cart_id));
 
-    try {
-      setUpdatingItems(prev => new Set(prev).add(cart_id));
-      
-      const response = await fetch(`${API_BASE}/update_cart.php`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          user_id: userId,
-          cart_id: cart_id,
-          quantity: newQuantity
-        }),
-      });
+        const response = await fetch(`${API_BASE}/update_cart.php`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: userId,
+            cart_id: cart_id,
+            quantity: newQuantity
+          }),
+        });
 
-      if (!response.ok) {
-        throw new Error("Failed to update quantity");
+        if (!response.ok) {
+          throw new Error("Failed to update quantity");
+        }
+
+        const result = await response.json();
+
+        if (result.success) {
+          setCartItems(prevItems =>
+            prevItems.map(item =>
+              item.cart_id === cart_id ? { ...item, quantity: newQuantity } : item
+            )
+          );
+        } else {
+          throw new Error(result.error || "Failed to update quantity");
+        }
+      } catch (error) {
+        console.error("Error updating quantity:", error);
+        setError("Failed to update quantity");
+        // Refresh cart to sync with server
+        fetchCart();
+      } finally {
+        setUpdatingItems(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(cart_id);
+          return newSet;
+        });
       }
-
-      const result = await response.json();
-      
-      if (result.success) {
-        setCartItems(prevItems =>
-          prevItems.map(item =>
-            item.cart_id === cart_id ? { ...item, quantity: newQuantity } : item
-          )
-        );
-      } else {
-        throw new Error(result.error || "Failed to update quantity");
+    } else {
+      // local cart update
+      try {
+        const raw = localStorage.getItem('local_cart');
+        const cart = Array.isArray(JSON.parse(raw || '[]')) ? JSON.parse(raw || '[]') : [];
+        const idx = cart.findIndex(i => (i.cart_id && i.cart_id === cart_id) || i.sku === cart_id || (`local-${i.sku}`) === cart_id);
+        if (idx !== -1) {
+          cart[idx].quantity = newQuantity;
+          localStorage.setItem('local_cart', JSON.stringify(cart));
+          setCartItems(prev => prev.map(item => (item.cart_id === cart_id ? { ...item, quantity: newQuantity } : item)));
+        }
+      } catch (err) {
+        console.error('Error updating local cart', err);
+        setError('Failed to update cart');
       }
-    } catch (error) {
-      console.error("Error updating quantity:", error);
-      setError("Failed to update quantity");
-      // Refresh cart to sync with server
-      fetchCart();
-    } finally {
-      setUpdatingItems(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(cart_id);
-        return newSet;
-      });
     }
   };
 
   const removeItem = async (cart_id) => {
-    try {
-      setUpdatingItems(prev => new Set(prev).add(cart_id));
-      
-      const response = await fetch(`${API_BASE}/remove_from_cart.php`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          user_id: userId,
-          cart_id: cart_id
-        }),
-      });
+    if (userId) {
+      try {
+        setUpdatingItems(prev => new Set(prev).add(cart_id));
 
-      if (!response.ok) {
-        throw new Error("Failed to remove item");
-      }
+        const response = await fetch(`${API_BASE}/remove_from_cart.php`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: userId,
+            cart_id: cart_id
+          }),
+        });
 
-      const result = await response.json();
-      
-      if (result.success) {
-        setCartItems(prevItems => prevItems.filter(item => item.cart_id !== cart_id));
-      } else {
-        throw new Error(result.error || "Failed to remove item");
+        if (!response.ok) {
+          throw new Error("Failed to remove item");
+        }
+
+        const result = await response.json();
+
+        if (result.success) {
+          setCartItems(prevItems => prevItems.filter(item => item.cart_id !== cart_id));
+        } else {
+          throw new Error(result.error || "Failed to remove item");
+        }
+      } catch (error) {
+        console.error("Error removing item:", error);
+        setError("Failed to remove item");
+        fetchCart();
+      } finally {
+        setUpdatingItems(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(cart_id);
+          return newSet;
+        });
       }
-    } catch (error) {
-      console.error("Error removing item:", error);
-      setError("Failed to remove item");
-      fetchCart();
-    } finally {
-      setUpdatingItems(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(cart_id);
-        return newSet;
-      });
+    } else {
+      // remove from local cart
+      try {
+        const raw = localStorage.getItem('local_cart');
+        const cart = Array.isArray(JSON.parse(raw || '[]')) ? JSON.parse(raw || '[]') : [];
+        const newCart = cart.filter(i => !( (i.cart_id && i.cart_id === cart_id) || i.sku === cart_id || (`local-${i.sku}`) === cart_id ));
+        localStorage.setItem('local_cart', JSON.stringify(newCart));
+        setCartItems(prev => prev.filter(item => item.cart_id !== cart_id));
+      } catch (err) {
+        console.error('Error removing from local cart', err);
+        setError('Failed to remove item');
+      }
     }
   };
 
@@ -153,7 +198,7 @@ const Cart = () => {
   };
 
   const totalPrice = cartItems.reduce(
-    (acc, item) => acc + item.price * item.quantity,
+    (acc, item) => acc + (Number(item.price) || 0) * (Number(item.quantity) || 0),
     0
   );
 
@@ -174,11 +219,8 @@ const Cart = () => {
   }
 
   if (!userId) {
-    return (
-      <div className="flex justify-center items-center h-64 text-gray-600 text-lg">
-        Please log in to view your cart
-      </div>
-    );
+    // when not logged in we still show the local cart (handled in effect)
+    // fallthrough to render below
   }
 
   if (error && cartItems.length === 0) {

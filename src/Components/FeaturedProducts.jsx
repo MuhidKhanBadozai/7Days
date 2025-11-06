@@ -69,44 +69,25 @@ const FeaturedProducts = () => {
 
   // Add to cart handler
   const handleAddToCart = async (product) => {
-    const user_id = localStorage.getItem("user_id");
     const quantity = parseInt(quantities[product.sku] || 1, 10);
-
-    if (!user_id) {
-      alert("Please log in first!");
-      navigate("/login");
-      return;
-    }
-
     try {
-      const res = await fetch(`${API_BASE}/add_to_cart.php`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          user_id,
-          product_id: product.id || product.product_id,
-          quantity,
-        }),
-      });
-
-      if (!res.ok) throw new Error(`Server error: ${res.status}`);
-
-      const data = await res.json();
-
-      if (data.success || data.message === "Cart updated" || data.message === "Product added to cart") {
-        setMessage("✅ " + (data.message || "Added to cart successfully!"));
+      const key = 'local_cart';
+      const raw = localStorage.getItem(key);
+      const cart = Array.isArray(JSON.parse(raw || '[]')) ? JSON.parse(raw || '[]') : [];
+      const price = product.price_200_500 || product.price || 0;
+      const img = buildFullImageUrl(product.image_url || product.image_main);
+      const existing = cart.find((i) => i.sku === product.sku);
+      if (existing) {
+        existing.quantity = (existing.quantity || 0) + quantity;
+        window.dispatchEvent(new CustomEvent('cart-notification', { detail: { message: `${product.name} quantity updated in cart`, type: 'success' } }));
       } else {
-        setMessage("❌ " + (data.message || "Failed to add to cart."));
-        console.error("Add to cart failed:", data);
+        cart.push({ sku: product.sku, id: product.id || product.product_id || null, name: product.name, price, quantity, image: img });
+        window.dispatchEvent(new CustomEvent('cart-notification', { detail: { message: `${product.name} added to cart`, type: 'success' } }));
       }
-
-      setTimeout(() => setMessage(null), 3000);
+      localStorage.setItem(key, JSON.stringify(cart));
     } catch (err) {
-      console.error("Error adding to cart:", err);
-      setMessage("❌ Could not connect to the server.");
-      setTimeout(() => setMessage(null), 3000);
+      console.error('Error updating local cart', err);
+      window.dispatchEvent(new CustomEvent('cart-notification', { detail: { message: `Failed to update cart`, type: 'error' } }));
     }
   };
 
@@ -122,13 +103,13 @@ const FeaturedProducts = () => {
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center text-[#0B2347] mb-8">
             Featured Products
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 justify-items-center">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {Array.from({ length: 10 }).map((_, index) => (
               <div
                 key={index}
-                className="flex flex-col items-center text-center border border-gray-200 rounded-2xl p-6 bg-white h-[400px] w-[300px] animate-pulse"
+                className="flex flex-col items-center text-center border border-gray-200 rounded-2xl p-3 sm:p-4 bg-white h-auto md:h-[400px] w-full animate-pulse"
               >
-                <div className="w-60 h-48 bg-gray-300 rounded-lg mb-5"></div>
+                <div className="w-full h-40 md:h-48 bg-gray-300 rounded-lg mb-5"></div>
                 <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
                 <div className="h-3 bg-gray-300 rounded w-1/2 mb-2"></div>
                 <div className="h-4 bg-gray-300 rounded w-1/4 mb-2"></div>
@@ -187,29 +168,29 @@ const FeaturedProducts = () => {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 justify-items-center">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {featuredProducts.map((product) => (
               <div
                 key={product.sku}
-                className="group relative flex flex-col items-center text-center border border-gray-200 rounded-2xl p-6 shadow-md hover:shadow-xl hover:scale-105 transition-all duration-300 bg-white h-[400px] w-[300px]"
+                className="group relative flex flex-col items-center text-center border border-gray-200 rounded-2xl p-3 sm:p-4 shadow-md hover:shadow-xl hover:scale-105 transition-all duration-300 bg-white h-auto md:h-[400px] w-full"
               >
                 {/* Image */}
-                <div 
-                  className="relative w-full h-56 flex items-center justify-center mb-5 overflow-hidden cursor-pointer"
+                <div
+                  className="relative w-full h-48 md:h-56 flex items-center justify-center mb-5 overflow-hidden cursor-pointer"
                   onClick={() => handleProductClick(product.sku)}
                 >
                   <img
                     src={buildFullImageUrl(product.image_url || product.image_main)}
                     alt={product.name}
-                    className="w-60 h-auto max-h-48 object-contain transition-transform duration-500 group-hover:scale-110"
+                    className="max-w-full h-auto max-h-40 md:max-h-48 object-contain transition-transform duration-500 group-hover:scale-110"
                     onError={(e) => {
                       e.target.src = "/placeholder.png";
                     }}
                   />
 
-                  {/* Add to Cart Icon */}
+                  {/* Add to Cart Icon Overlay */}
                   <div className="absolute opacity-0 group-hover:opacity-100 transition-all duration-500">
-                    <div 
+                    <div
                       className="bg-[#0B2347] p-4 rounded-full transform translate-y-6 group-hover:translate-y-0 transition-all duration-500 shadow-lg cursor-pointer"
                       onClick={(e) => {
                         e.stopPropagation();

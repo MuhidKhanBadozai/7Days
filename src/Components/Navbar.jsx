@@ -21,6 +21,7 @@ export default function Navbar() {
     const [userName, setUserName] = useState("");
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+    const [toasts, setToasts] = useState([]);
     const navigate = useNavigate();
 
     // ✅ Fetch categories + check login
@@ -61,6 +62,18 @@ export default function Navbar() {
         };
         window.addEventListener("storage", handleStorageChange);
         return () => window.removeEventListener("storage", handleStorageChange);
+    }, []);
+
+    // Listen for global cart notifications to show toast in top-right
+    useEffect(() => {
+        const handler = (e) => {
+            const { message = "", type = "success" } = e?.detail || {};
+            const id = Date.now() + Math.random();
+            setToasts((t) => [...t, { id, message, type }]);
+            setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 3500);
+        };
+        window.addEventListener("cart-notification", handler);
+        return () => window.removeEventListener("cart-notification", handler);
     }, []);
 
     const handleCategoryClick = (category) => {
@@ -178,19 +191,6 @@ export default function Navbar() {
                             )}
                         </div>
                     )}
-
-                    {/* Favorite */}
-                    <button className="relative p-2 rounded-full bg-[#0B2347] text-white">
-                        <Heart size={18} />
-                    </button>
-
-                    {/* Compare */}
-                    <button className="relative p-2 rounded-full bg-[#0B2347] text-white">
-                        <Shuffle size={18} />
-                        <span className="absolute -top-1 -right-1 text-xs bg-white text-[#0B2347] font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                            2
-                        </span>
-                    </button>
 
                     {/* Cart */}
                     <button
@@ -311,6 +311,15 @@ export default function Navbar() {
                     </aside>
                 </div>
             )}
+
+                {/* Toast container (top-right) */}
+                <div className="fixed top-4 right-4 z-60 flex flex-col items-end gap-2">
+                    {toasts.map((t) => (
+                        <div key={t.id} className={`min-w-[220px] max-w-sm px-4 py-2 rounded-lg shadow-lg text-sm font-medium transform transition-all duration-200 ${t.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>
+                            {t.message}
+                        </div>
+                    ))}
+                </div>
         </header>
     );
 }

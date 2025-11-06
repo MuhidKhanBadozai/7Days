@@ -6,7 +6,7 @@ const Home = () => {
   return (
     <div>
       {/* Minimal Hero Section */}
-      <div className="relative w-full h-screen bg-center bg-cover bg-no-repeat flex items-center justify-center">
+      <div className="relative w-full h-[40vh] md:h-screen bg-center bg-cover bg-no-repeat flex items-center justify-center">
         {/* Background Image */}
         <div 
           className="absolute inset-0 bg-center bg-cover bg-no-repeat"

@@ -77,44 +77,27 @@ const ProductCatalogue = () => {
 
   // ✅ ADD TO CART HANDLER
   const handleAddToCart = async (product) => {
-    const user_id = localStorage.getItem("user_id"); // user id from login
     const quantity = parseInt(quantities[product.sku] || 1, 10);
-
-    if (!user_id) {
-      alert("Please log in first!");
-      navigate("/login");
-      return;
-    }
-
     try {
-      const res = await fetch(`${API_BASE}/add_to_cart.php`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          user_id,
-          product_id: product.id, // or product.id depending on your DB
-          quantity,
-        }),
-      });
-
-      if (!res.ok) throw new Error(`Server error: ${res.status}`);
-
-      const data = await res.json();
-
-      if (data.success || data.message === "Cart updated" || data.message === "Product added to cart") {
-        setMessage("✅ " + (data.message || "Added to cart successfully!"));
+      const key = 'local_cart';
+      const raw = localStorage.getItem(key);
+      const cart = Array.isArray(JSON.parse(raw || '[]')) ? JSON.parse(raw || '[]') : [];
+      const price = product.price_200_500 || product.price || 0;
+      const img = product.image_url
+        ? (product.image_url.startsWith('http') ? product.image_url : `${API_BASE.replace('/api','')}/${product.image_url}`)
+        : '/placeholder.png';
+      const existing = cart.find((i) => i.sku === product.sku);
+      if (existing) {
+        existing.quantity = (existing.quantity || 0) + quantity;
+        window.dispatchEvent(new CustomEvent('cart-notification', { detail: { message: `${product.name} quantity updated in cart`, type: 'success' } }));
       } else {
-        setMessage("❌ " + (data.message || "Failed to add to cart."));
-        console.error("Add to cart failed:", data);
+        cart.push({ sku: product.sku, id: product.id || null, name: product.name, price, quantity, image: img });
+        window.dispatchEvent(new CustomEvent('cart-notification', { detail: { message: `${product.name} added to cart`, type: 'success' } }));
       }
-
-      setTimeout(() => setMessage(null), 3000);
+      localStorage.setItem(key, JSON.stringify(cart));
     } catch (err) {
-      console.error("Error adding to cart:", err);
-      setMessage("❌ Could not connect to the server.");
-      setTimeout(() => setMessage(null), 3000);
+      console.error('Error updating local cart', err);
+      window.dispatchEvent(new CustomEvent('cart-notification', { detail: { message: `Failed to update cart`, type: 'error' } }));
     }
   };
 
