@@ -125,10 +125,32 @@ export default function Navbar() {
 
     return (
         <header className="w-full bg-white text-[#000000] shadow-md">
-            {/* Top Section */}
-            <div className="flex items-center justify-between px-4 md:px-6 py-3 max-w-7xl mx-auto">
-                {/* Logo */}
-                <div className="flex items-center space-x-4">
+            {/* Top Section - 3 Column Grid Layout */}
+            <div className="grid grid-cols-3 items-center px-4 md:px-6 py-3 max-w-7xl mx-auto">
+                {/* Left Section - Search */}
+                <div className="flex items-center justify-start">
+                    {/* Desktop search */}
+                    <div className="hidden md:flex relative w-full max-w-xs">
+                        <input
+                            type="text"
+                            placeholder="Search products"
+                            className="w-full rounded-full py-2 px-3 pr-10 text-black border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#000000]"
+                        />
+                        <Search className="absolute right-3 top-2.5 text-gray-500" size={18} />
+                    </div>
+
+                    {/* Mobile - Hamburger */}
+                    <button
+                        onClick={() => setMobileMenuOpen(true)}
+                        className="md:hidden p-2 rounded-md text-[#000000] hover:bg-gray-100"
+                        aria-label="Open menu"
+                    >
+                        <Menu size={22} />
+                    </button>
+                </div>
+
+                {/* Center Section - Logo */}
+                <div className="flex justify-center">
                     <a href="/">
                         <img
                             src="/logo.jpg"
@@ -138,34 +160,24 @@ export default function Navbar() {
                     </a>
                 </div>
 
-                {/* Search Bar */}
-                {/* desktop search */}
-                <div className="hidden md:flex flex-grow mx-4 w-full max-w-xl relative">
-                    <input
-                        type="text"
-                        placeholder="Search for products"
-                        className="w-full rounded-full py-2 px-3 pr-12 text-black border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#000000]"
-                    />
-                    <Search className="absolute right-3 top-3 text-gray-500" size={18} />
-                </div>
-
-                {/* mobile icons (search + cart + hamburger) */}
-                <div className="flex items-center gap-2 md:hidden">
+                {/* Right Section - Icons */}
+                <div className="flex items-center justify-end gap-2">
+                    {/* Mobile Search Icon */}
                     <button
                         onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
-                        className="p-2 rounded-md text-[#000000] hover:bg-gray-100"
-                        aria-label="Open search"
+                        className="md:hidden p-2 rounded-md text-[#000000] hover:bg-gray-100"
+                        aria-label="Toggle search"
                     >
-                        <Search size={18} />
+                        <Search size={20} />
                     </button>
 
-                    {/* Cart button visible on mobile, to the right of search */}
+                    {/* Mobile Cart */}
                     <button
                         onClick={() => navigate('/cart')}
-                        className="relative p-2 rounded-md text-[#000000] hover:bg-gray-100"
+                        className="md:hidden relative p-2 rounded-md text-[#000000] hover:bg-gray-100"
                         aria-label="Open cart"
                     >
-                        <ShoppingBag size={18} />
+                        <ShoppingBag size={20} />
                         {cartCount > 0 && (
                             <span className="absolute -top-1 -right-1 text-[10px] bg-[#000000] text-white font-bold rounded-full w-4 h-4 flex items-center justify-center">
                                 {cartCount}
@@ -173,109 +185,100 @@ export default function Navbar() {
                         )}
                     </button>
 
-                    <button
-                        onClick={() => setMobileMenuOpen(true)}
-                        className="p-2 rounded-md text-[#0B2347] hover:bg-gray-100"
-                        aria-label="Open menu"
-                    >
-                        <Menu size={20} />
-                    </button>
-                </div>
+                    {/* Desktop Icons */}
+                    <div className="hidden md:flex items-center gap-3">
+                        {/* User / Profile Section */}
+                        {!isLoggedIn ? (
+                            <>
+                                <button
+                                    onClick={() => navigate("/login")}
+                                    className="flex items-center space-x-2 bg-[#000000] text-white px-3 py-2 rounded-full hover:bg-gray-200 hover:text-[#000000] transition"
+                                >
+                                    <User size={18} />
+                                    <span className="text-sm font-medium">Login</span>
+                                </button>
+                                <button
+                                    onClick={() => navigate("/signup")}
+                                    className="flex items-center space-x-2 bg-[#000000] text-white px-3 py-2 rounded-full hover:bg-gray-200 hover:text-[#000000] transition"
+                                >
+                                    <User size={18} />
+                                    <span className="text-sm font-medium">Register</span>
+                                </button>
+                            </>
+                        ) : (
+                            <div className="relative">
+                                <button
+                                    onClick={() => setProfileOpen(!profileOpen)}
+                                    className="flex items-center space-x-2 bg-[#000000] text-white px-3 py-2 rounded-full hover:bg-gray-200 hover:text-[#000000] transition"
+                                >
+                                    <User size={18} />
+                                    <span className="text-sm font-medium">{userName}</span>
+                                </button>
 
-                {/* Right Icons */}
-                <div className="hidden md:flex items-center space-x-4 relative">
-                    {/* ✅ User / Profile Section */}
-                    {!isLoggedIn ? (
-                        <>
-                            <button
-                                onClick={() => navigate("/login")}
-                                className="flex items-center space-x-2 bg-[#000000] text-white px-3 py-2 rounded-full hover:bg-white hover:text-[#000000] transition"
-                            >
-                                <User size={18} />
-                                <span className="text-sm font-medium">Login</span>
-                            </button>
-                            <button
-                                onClick={() => navigate("/signup")}
-                                className="flex items-center space-x-2 bg-[#000000] text-white px-3 py-2 rounded-full hover:bg-white hover:text-[#000000] transition"
-                            >
-                                <User size={18} />
-                                <span className="text-sm font-medium">Register</span>
-                            </button>
-                        </>
-                    ) : (
-                        <div className="relative">
-                            <button
-                                onClick={() => setProfileOpen(!profileOpen)}
-                                className="flex items-center space-x-2 bg-[#000000] text-white px-3 py-2 rounded-full hover:bg-white hover:text-[#000000] transition"
-                            >
-                                <User size={18} />
-                                <span className="text-sm font-medium">{userName}</span>
-                            </button>
-
-                            {profileOpen && (
-                                <ul className="absolute right-0 mt-2 w-56 bg-white text-black rounded-lg shadow-lg overflow-hidden z-50">
-                                    <li
-                                        onClick={() => {
-                                            navigate("/profile");
-                                            setProfileOpen(false);
-                                        }}
-                                        className="px-4 py-2 hover:bg-orange-100 cursor-pointer flex items-center gap-2"
-                                    >
-                                        <User size={18} /> Profile
-                                    </li>
-                                    <li
-                                        onClick={() => {
-                                            navigate("/orders");
-                                            setProfileOpen(false);
-                                        }}
-                                        className="px-4 py-2 hover:bg-orange-100 cursor-pointer flex items-center gap-2"
-                                    >
-                                        <List size={18} /> Order History
-                                    </li>
-                                    <li
-                                        onClick={handleLogout}
-                                        className="px-4 py-2 hover:bg-red-100 cursor-pointer text-red-600 flex items-center gap-2"
-                                    >
-                                        <LogOut size={18} /> Logout
-                                    </li>
-                                </ul>
-                            )}
-                        </div>
-                    )}
-
-                    {/* Cart */}
-                    <button
-                        onClick={() => navigate("/cart")}
-                        className="relative flex items-center bg-[#000000] text-white rounded-full px-2 py-2 hover:bg-white hover:text-[#000000] transition"
-                    >
-                        <ShoppingBag size={18} />
-                        <span className="ml-2 text-sm">${cartTotal.toFixed(2)}</span>
-                        {cartCount > 0 && (
-                            <span className="absolute -top-1 -right-1 text-xs bg-white text-[#000000] font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                                {cartCount}
-                            </span>
+                                {profileOpen && (
+                                    <ul className="absolute right-0 mt-2 w-56 bg-white text-black rounded-lg shadow-lg overflow-hidden z-50">
+                                        <li
+                                            onClick={() => {
+                                                navigate("/profile");
+                                                setProfileOpen(false);
+                                            }}
+                                            className="px-4 py-2 hover:bg-orange-100 cursor-pointer flex items-center gap-2"
+                                        >
+                                            <User size={18} /> Profile
+                                        </li>
+                                        <li
+                                            onClick={() => {
+                                                navigate("/orders");
+                                                setProfileOpen(false);
+                                            }}
+                                            className="px-4 py-2 hover:bg-orange-100 cursor-pointer flex items-center gap-2"
+                                        >
+                                            <List size={18} /> Order History
+                                        </li>
+                                        <li
+                                            onClick={handleLogout}
+                                            className="px-4 py-2 hover:bg-red-100 cursor-pointer text-red-600 flex items-center gap-2"
+                                        >
+                                            <LogOut size={18} /> Logout
+                                        </li>
+                                    </ul>
+                                )}
+                            </div>
                         )}
-                    </button>
 
+                        {/* Cart */}
+                        <button
+                            onClick={() => navigate("/cart")}
+                            className="relative flex items-center bg-[#000000] text-white rounded-full px-3 py-2 hover:bg-gray-200 hover:text-[#000000] transition"
+                        >
+                            <ShoppingBag size={18} />
+                            <span className="ml-2 text-sm font-medium">${cartTotal.toFixed(2)}</span>
+                            {cartCount > 0 && (
+                                <span className="absolute -top-1 -right-1 text-xs bg-white text-[#000000] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                                    {cartCount}
+                                </span>
+                            )}
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            {/* mobile search input (small) */}
+            {/* Mobile search input */}
             {mobileSearchOpen && (
                 <div className="md:hidden px-4 pb-3">
                     <div className="relative">
                         <input
                             type="text"
                             placeholder="Search for products"
-                            className="w-full rounded-full py-2 px-3 pr-12 text-black border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#0B2347]"
+                            className="w-full rounded-full py-2 px-3 pr-12 text-black border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#000000]"
                         />
-                        <Search className="absolute right-3 top-2 text-gray-500" size={16} />
+                        <Search className="absolute right-3 top-2.5 text-gray-500" size={18} />
                     </div>
                 </div>
             )}
 
             {/* Bottom Menu */}
-                <nav className="bg-[#000000] border-t border-white/10">
+            <nav className="bg-[#000000] border-t border-white/10">
                 <ul className="hidden md:flex items-center justify-center space-x-10 px-6 py-4 text-lg font-semibold text-white max-w-7xl mx-auto">
                     {/* Browse Categories */}
                     <li className="relative">
@@ -378,14 +381,14 @@ export default function Navbar() {
                 </div>
             )}
 
-                {/* Toast container (top-right) */}
-                <div className="fixed top-4 right-4 z-60 flex flex-col items-end gap-2">
-                    {toasts.map((t) => (
-                        <div key={t.id} className={`min-w-[220px] max-w-sm px-4 py-2 rounded-lg shadow-lg text-sm font-medium transform transition-all duration-200 ${t.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>
-                            {t.message}
-                        </div>
-                    ))}
-                </div>
+            {/* Toast container (top-right) */}
+            <div className="fixed top-4 right-4 z-[60] flex flex-col items-end gap-2">
+                {toasts.map((t) => (
+                    <div key={t.id} className={`min-w-[220px] max-w-sm px-4 py-2 rounded-lg shadow-lg text-sm font-medium transform transition-all duration-200 ${t.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>
+                        {t.message}
+                    </div>
+                ))}
+            </div>
         </header>
     );
 }
