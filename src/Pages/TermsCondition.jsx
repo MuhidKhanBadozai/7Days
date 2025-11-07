@@ -136,11 +136,11 @@ const TermsCondition = () => {
               <p className="mb-2">
                 Questions about the Terms of Service should be sent to us at:
               </p>
-              <p className="text-blue-600 font-medium">legal@brandmasterswholesale.com</p>
+              <p className="text-blue-600 font-medium">info@putratraders.com</p>
               <p className="mt-4">
-                BrandMasters Wholesale<br />
-                12999 Murphy Road Suite N#5<br />
-                Stafford, Texas 77477<br />
+                Putra Traders<br />
+                5900 BALCONES DR STE 19007<br />
+                AUSTIN, TX 78731<br />
                 United States
               </p>
             </section>

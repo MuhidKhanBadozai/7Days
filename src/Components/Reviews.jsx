@@ -97,7 +97,7 @@ const Reviews = () => {
 
       {/* Infinite Marquee Section */}
       <div className="relative w-full overflow-hidden">
-        <div className="flex whitespace-nowrap animate-marquee-right">
+        <div className="flex animate-marquee-right">
           {[...reviews, ...reviews].map((review, index) => (
             <ReviewCard key={index} {...review} />
           ))}
@@ -177,7 +177,7 @@ const ReviewCard = ({ img, name, username, body, orderType, location, rating }) 
         </div>
       </div>
 
-      <blockquote className="text-sm text-gray-700 leading-relaxed mb-4">
+      <blockquote className="text-sm text-gray-700 leading-relaxed mb-4 break-words">
         "{body}"
       </blockquote>
 

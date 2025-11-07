@@ -353,7 +353,6 @@ export default function Navbar() {
                                 ) : (
                                     <button onClick={() => { navigate('/profile'); setMobileMenuOpen(false); }} className="flex-1 px-3 py-2 bg-[#000000] text-white rounded">Account</button>
                                 )}
-                                <button onClick={() => { navigate('/cart'); setMobileMenuOpen(false); }} className="px-3 py-2 bg-white text-[#000000] rounded border">Cart</button>
                             </div>
 
                             <div className="mt-6">

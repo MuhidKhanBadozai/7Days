@@ -85,7 +85,7 @@ const ReturnsRefund = () => {
               </p>
               <p className="mb-4">
                 If you've done all of this and you still have not received your refund yet, please contact 
-                us at support@brandmasterswholesale.com.
+                us at info@putratraders.com.
               </p>
             </section>
 
@@ -104,9 +104,7 @@ const ReturnsRefund = () => {
                 the same item, send us an email at support@brandmasterswholesale.com and send your item to:
               </p>
               <p className="bg-gray-100 p-4 rounded-lg font-medium mb-4">
-                12999 Murphy Road Suite N#5<br />
-                Stafford, Texas 77477<br />
-                United States
+                5900 BALCONES DR STE 19007 AUSTIN, TX 78731
               </p>
             </section>
 
@@ -130,8 +128,8 @@ const ReturnsRefund = () => {
                 To return your product, you should mail your product to our returns address:
               </p>
               <p className="bg-gray-100 p-4 rounded-lg font-medium mb-4">
-                12999 Murphy Road Suite N#5<br />
-                Stafford, Texas 77477<br />
+                5900 BALCONES DR STE 19007<br />
+                AUSTIN, TX 78731<br />
                 United States
               </p>
               <p className="mb-4">
@@ -153,9 +151,9 @@ const ReturnsRefund = () => {
             <section>
               <h2 className="text-2xl font-semibold text-gray-800 mb-4">Need Help?</h2>
               <p className="mb-2">
-                Contact us at support@brandmasterswholesale.com for questions related to refunds and returns.
+                Contact us at info@putratraders.com for questions related to refunds and returns.
               </p>
-              <p className="text-blue-600 font-medium">support@brandmasterswholesale.com</p>
+              <p className="text-blue-600 font-medium">info@putratraders.com</p>
             </section>
           </div>
         </div>
