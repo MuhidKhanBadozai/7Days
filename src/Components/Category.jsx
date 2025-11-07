@@ -1,6 +1,7 @@
 // src/pages/Category.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { ShoppingCart } from "lucide-react";
 
 const API_BASE = "https://putratraders.com/api";
 
@@ -36,6 +37,7 @@ const Category = () => {
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [quantities, setQuantities] = useState({});
 
   useEffect(() => {
     const fetchCategory = async () => {
@@ -83,6 +85,15 @@ const Category = () => {
     fetchCategories();
   }, []);
 
+  // Handle quantity changes
+  const handleQuantityChange = (sku, value) => {
+    const newValue = Math.max(1, parseInt(value) || 1);
+    setQuantities(prev => ({
+      ...prev,
+      [sku]: newValue
+    }));
+  };
+
   const handleAddToCart = (product) => {
     try {
       const key = 'local_cart';
@@ -90,18 +101,42 @@ const Category = () => {
       const cart = Array.isArray(JSON.parse(raw || '[]')) ? JSON.parse(raw || '[]') : [];
       const price = product.price_200_500 || product.price || 0;
       const img = buildFullImageUrl(product.image_url || product.image_main);
+      const quantity = parseInt(quantities[product.sku] || 1, 10);
+      
       const existing = cart.find((i) => i.sku === product.sku);
       if (existing) {
-        existing.quantity = (existing.quantity || 0) + 1;
-        window.dispatchEvent(new CustomEvent('cart-notification', { detail: { message: `${product.name} quantity updated in cart`, type: 'success' } }));
+        existing.quantity = (existing.quantity || 0) + quantity;
+        window.dispatchEvent(new CustomEvent('cart-notification', { 
+          detail: { 
+            message: `${product.name} quantity updated in cart`, 
+            type: 'success' 
+          } 
+        }));
       } else {
-        cart.push({ sku: product.sku, id: product.id || product.product_id || null, name: product.name, price, quantity: 1, image: img });
-        window.dispatchEvent(new CustomEvent('cart-notification', { detail: { message: `${product.name} added to cart`, type: 'success' } }));
+        cart.push({ 
+          sku: product.sku, 
+          id: product.id || product.product_id || null, 
+          name: product.name, 
+          price, 
+          quantity, 
+          image: img 
+        });
+        window.dispatchEvent(new CustomEvent('cart-notification', { 
+          detail: { 
+            message: `${product.name} added to cart`, 
+            type: 'success' 
+          } 
+        }));
       }
       localStorage.setItem(key, JSON.stringify(cart));
     } catch (err) {
       console.error('Error updating local cart', err);
-      window.dispatchEvent(new CustomEvent('cart-notification', { detail: { message: `Failed to update cart`, type: 'error' } }));
+      window.dispatchEvent(new CustomEvent('cart-notification', { 
+        detail: { 
+          message: `Failed to update cart`, 
+          type: 'error' 
+        } 
+      }));
     }
   };
 
@@ -178,7 +213,10 @@ const Category = () => {
                   key={product.sku}
                   className="group relative bg-white border rounded-lg p-4 shadow-sm hover:shadow-lg transition-all"
                 >
-                  <div className="h-40 flex items-center justify-center mb-3">
+                  <div 
+                    className="h-40 flex items-center justify-center mb-3 cursor-pointer"
+                    onClick={() => navigate(`/product/${product.sku}`)}
+                  >
                     <img
                       src={product.image_url}
                       alt={product.name}
@@ -188,7 +226,10 @@ const Category = () => {
                   <div className="text-xs text-gray-500 mb-1">
                     SKU: <span className="text-gray-700">{product.sku}</span>
                   </div>
-                  <div className="text-sm font-medium text-gray-900 line-clamp-2 mb-1">
+                  <div 
+                    className="text-sm font-medium text-gray-900 line-clamp-2 mb-1 cursor-pointer hover:text-[#0B2347] transition-colors"
+                    onClick={() => navigate(`/product/${product.sku}`)}
+                  >
                     {product.name}
                   </div>
                   <div className="flex items-center justify-between">
@@ -203,13 +244,27 @@ const Category = () => {
                     </div>
                   </div>
 
-                  {/* Hover "Add to cart" */}
-                  <button
-                    onClick={() => handleAddToCart(product)}
-                    className="absolute bottom-4 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300 bg-orange-500 text-white px-4 py-2 rounded shadow-lg text-sm"
-                  >
-                    Add to cart
-                  </button>
+                  {/* Quantity and Add to cart */}
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300 flex items-center gap-2">
+                    <input
+                      type="number"
+                      min="1"
+                      value={quantities[product.sku] || 1}
+                      onChange={(e) => handleQuantityChange(product.sku, e.target.value)}
+                      className="w-12 text-center border border-gray-300 rounded-md p-1 focus:ring-1 focus:ring-[#0B2347] text-sm"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddToCart(product);
+                      }}
+                      className="bg-orange-500 text-white px-3 py-1 rounded-lg text-sm font-semibold hover:bg-orange-600 transition-colors flex items-center gap-1"
+                    >
+                      <ShoppingCart size={16} />
+                      Add
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>

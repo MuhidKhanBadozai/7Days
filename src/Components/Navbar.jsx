@@ -129,11 +129,13 @@ export default function Navbar() {
             <div className="flex items-center justify-between px-4 md:px-6 py-3 max-w-7xl mx-auto">
                 {/* Logo */}
                 <div className="flex items-center space-x-4">
-                    <img
-                        src="/logo.jpg"
-                        alt="Logo"
-                        className="h-12 md:h-16 w-auto object-contain"
-                    />
+                    <a href="/">
+                        <img
+                            src="/logo.jpg"
+                            alt="Logo"
+                            className="h-12 md:h-16 w-auto object-contain"
+                        />
+                    </a>
                 </div>
 
                 {/* Search Bar */}

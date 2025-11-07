@@ -1,13 +1,51 @@
 import React, { useEffect, useState } from "react";
 import FeaturedProducts from "../Components/FeaturedProducts";
 import Reviews from "../Components/Reviews";
+import { ShoppingCart } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const API_BASE = "https://putratraders.com/api";
 
 const Home = () => {
-  const [activeTab, setActiveTab] = useState('Personal Care');
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('Health and Household');
   const [products, setProducts] = useState([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [quantities, setQuantities] = useState({});
+
+  // Navigate to product details
+  const handleProductClick = (sku) => {
+    navigate(`/product/${sku}`);
+  };
+
+  // Quantity input handler
+  const handleQuantityChange = (sku, value) => {
+    setQuantities((prev) => ({ ...prev, [sku]: value }));
+  };
+
+  // Add to cart handler
+  const handleAddToCart = async (product) => {
+    const quantity = parseInt(quantities[product.sku] || 1, 10);
+    try {
+      const key = 'local_cart';
+      const raw = localStorage.getItem(key);
+      const cart = Array.isArray(JSON.parse(raw || '[]')) ? JSON.parse(raw || '[]') : [];
+      const price = product.price_200_500 || product.price || 0;
+      const img = product.image_url;
+      const existing = cart.find((i) => i.sku === product.sku);
+      if (existing) {
+        existing.quantity = (existing.quantity || 0) + quantity;
+        window.dispatchEvent(new CustomEvent('cart-notification', { detail: { message: `${product.name} quantity updated in cart`, type: 'success' } }));
+      } else {
+        cart.push({ sku: product.sku, id: product.id || product.product_id || null, name: product.name, price, quantity, image: img });
+        window.dispatchEvent(new CustomEvent('cart-notification', { detail: { message: `${product.name} added to cart`, type: 'success' } }));
+      }
+      localStorage.setItem(key, JSON.stringify(cart));
+    } catch (err) {
+      console.error('Error updating local cart', err);
+      window.dispatchEvent(new CustomEvent('cart-notification', { detail: { message: `Failed to update cart`, type: 'error' } }));
+    }
+  };
 
   useEffect(() => {
     // fetch products for activeTab
@@ -75,8 +113,8 @@ const Home = () => {
           <div className="flex items-center justify-center gap-8 text-gray-600 mb-8">
             {[
               'Health and Household',
-              'Grocery',
-              'Personal Care'
+              'Grocery and Gourmet Food',
+              'Automotive'
             ].map((tab) => (
               <button
                 key={tab}
@@ -90,24 +128,109 @@ const Home = () => {
 
           {/* Products grid (3 columns) */}
           {categoriesLoading ? (
-            <div className="text-center py-12">Loading...</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="flex flex-col items-center text-center border border-gray-200 rounded-2xl p-3 sm:p-4 bg-white h-auto md:h-[400px] w-full animate-pulse"
+                >
+                  <div className="w-full h-40 md:h-48 bg-gray-300 rounded-lg mb-5"></div>
+                  <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
+                  <div className="h-3 bg-gray-300 rounded w-1/2 mb-2"></div>
+                  <div className="h-4 bg-gray-300 rounded w-1/4 mb-2"></div>
+                  <div className="h-6 bg-gray-300 rounded w-1/3"></div>
+                </div>
+              ))}
+            </div>
           ) : products.length === 0 ? (
             <div className="text-center py-12">No products found for this category.</div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
-              {products.slice(0,3).map((p, idx) => (
-                <div key={p.sku || idx} className="text-center">
-                  <div className="flex justify-center mb-4">
-                    <img src={p.image_url || `/Item${(idx%3)+1}.png`} alt={p.name || 'Product'} className="h-40 object-contain" />
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              {products.slice(0,4).map((product, idx) => (
+                <div
+                  key={product.sku || idx}
+                  className="group relative flex flex-col items-center text-center border border-gray-200 rounded-2xl p-3 sm:p-4 shadow-md hover:shadow-xl hover:scale-105 transition-all duration-300 bg-white h-auto md:h-[400px] w-full"
+                >
+                  {/* Image */}
+                  <div 
+                    className="relative w-full h-36 md:h-48 flex items-center justify-center mb-5 overflow-hidden cursor-pointer"
+                    onClick={() => handleProductClick(product.sku)}
+                  >
+                    <img
+                      src={product.image_url || `/Item${(idx%3)+1}.png`}
+                      alt={product.name || 'Product'}
+                      className="max-w-full h-auto max-h-28 md:max-h-40 object-contain transition-transform duration-500 group-hover:scale-110"
+                      onError={(e) => {
+                        e.target.src = "/placeholder.png";
+                      }}
+                    />
+
+                    {/* Add to Cart Icon Overlay */}
+                    <div className="absolute opacity-0 group-hover:opacity-100 transition-all duration-500">
+                      <div
+                        className="bg-[#0B2347] p-4 rounded-full transform translate-y-6 group-hover:translate-y-0 transition-all duration-500 shadow-lg cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAddToCart(product);
+                        }}
+                      >
+                        <ShoppingCart size={24} color="white" />
+                      </div>
+                    </div>
                   </div>
-                  <h3 className="text-lg font-semibold mb-1">{p.name || 'Product Name'}</h3>
-                  <div className="text-sm text-gray-500 mb-2">SKU: {p.sku || '—'}</div>
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <div className="text-yellow-400">★★★★★</div>
-                    <div className="text-sm text-gray-500">({p.reviews ?? 0})</div>
+
+                  {/* Product Info */}
+                  <h3 
+                    className="text-base font-semibold mb-2 text-gray-800 line-clamp-2 hover:text-[#0B2347] transition-colors cursor-pointer"
+                    onClick={() => handleProductClick(product.sku)}
+                  >
+                    {product.name || 'Product Name'}
+                  </h3>
+                  <p className="text-sm text-gray-500 mb-2">SKU: {product.sku || '—'}</p>
+
+                  {/* Ratings */}
+                  <div className="flex items-center justify-center gap-1 mb-3">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <span
+                        key={i}
+                        className={`text-yellow-400 ${
+                          i < (product.rating || Math.floor(Math.random() * 2) + 3) ? "opacity-100" : "opacity-30"
+                        }`}
+                      >
+                        ★
+                      </span>
+                    ))}
+                    <span className="text-sm text-gray-500 ml-1">
+                      ({product.reviews || Math.floor(Math.random() * 100) + 20})
+                    </span>
                   </div>
-                  <div className="text-xl font-bold text-[#0B2347] mb-4">${p.price_200_500 ?? p.price ?? '0.00'}</div>
-                  <button className="px-6 py-2 bg-[#f9b233] text-white rounded-md font-semibold">SELECT OPTIONS</button>
+
+                  {/* Price */}
+                  <p className="text-lg font-semibold text-gray-800 mb-3">
+                    ${product.price_200_500 || product.price || '0.00'}
+                  </p>
+
+                  {/* Quantity and Add to Cart */}
+                  <div className="flex items-center gap-2 mt-auto">
+                    <input
+                      type="number"
+                      min="1"
+                      value={quantities[product.sku] || 1}
+                      onChange={(e) => handleQuantityChange(product.sku, e.target.value)}
+                      className="w-12 text-center border border-gray-300 rounded-md p-1 focus:ring-1 focus:ring-[#0B2347] text-sm"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddToCart(product);
+                      }}
+                      className="bg-orange-500 text-white px-3 py-1 rounded-lg text-sm font-semibold hover:bg-orange-600 transition-colors flex items-center gap-1"
+                    >
+                      <ShoppingCart size={16} />
+                      Add
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>

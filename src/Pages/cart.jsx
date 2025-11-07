@@ -332,7 +332,7 @@ const Cart = () => {
               >
                 <div className="flex items-center space-x-4 flex-1">
                   <img
-                    src={`https://putratraders.com${item.image_url}`}
+                    src={item.image_url && item.image_url.startsWith('http') ? item.image_url : `https://putratraders.com${item.image_url}`}
                     alt={item.name}
                     className="w-20 h-20 md:w-24 md:h-24 object-contain rounded-md border"
                     onError={(e) => {
