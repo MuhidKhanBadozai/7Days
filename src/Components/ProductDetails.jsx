@@ -41,6 +41,14 @@ const ProductDetails = () => {
   };
 
   useEffect(() => {
+    // scroll to top whenever product page opens or SKU changes
+    try {
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    } catch (e) {
+      // older browsers fallback
+      window.scrollTo(0, 0);
+    }
+
     if (sku) fetchProduct(sku);
   }, [sku]);
 
@@ -180,7 +188,7 @@ const ProductDetails = () => {
               {/* Pricing */}
               <div className="space-y-3">
                 <div className="flex items-baseline gap-3">
-                  <span className="text-5xl font-bold text-[#0B2347]">
+                  <span className="text-5xl font-bold text-[#000000]">
                     ${product.price_200_500}
                   </span>
                   <span className="text-gray-500 text-lg">per unit</span>
@@ -194,12 +202,12 @@ const ProductDetails = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="bg-white rounded-lg p-4 text-center border">
                     <div className="text-sm text-gray-600">200-500 Units</div>
-                    <div className="text-xl font-bold text-[#0B2347]">${product.price_200_500}</div>
+                    <div className="text-xl font-bold text-[#000000]">${product.price_200_500}</div>
                     <div className="text-green-600 text-sm">5% OFF</div>
                   </div>
                   <div className="bg-white rounded-lg p-4 text-center border">
                     <div className="text-sm text-gray-600">501+ Units</div>
-                    <div className="text-xl font-bold text-[#0B2347]">${product.price_500plus}</div>
+                    <div className="text-xl font-bold text-[#000000]">${product.price_500plus}</div>
                     <div className="text-green-600 text-sm">10% OFF</div>
                   </div>
                 </div>

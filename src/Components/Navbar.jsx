@@ -124,7 +124,7 @@ export default function Navbar() {
     };
 
     return (
-        <header className="w-full bg-white text-[#0B2347] shadow-md">
+        <header className="w-full bg-white text-[#000000] shadow-md">
             {/* Top Section */}
             <div className="flex items-center justify-between px-4 md:px-6 py-3 max-w-7xl mx-auto">
                 {/* Logo */}
@@ -144,7 +144,7 @@ export default function Navbar() {
                     <input
                         type="text"
                         placeholder="Search for products"
-                        className="w-full rounded-full py-2 px-3 pr-12 text-black border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#0B2347]"
+                        className="w-full rounded-full py-2 px-3 pr-12 text-black border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#000000]"
                     />
                     <Search className="absolute right-3 top-3 text-gray-500" size={18} />
                 </div>
@@ -153,7 +153,7 @@ export default function Navbar() {
                 <div className="flex items-center gap-2 md:hidden">
                     <button
                         onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
-                        className="p-2 rounded-md text-[#0B2347] hover:bg-gray-100"
+                        className="p-2 rounded-md text-[#000000] hover:bg-gray-100"
                         aria-label="Open search"
                     >
                         <Search size={18} />
@@ -162,12 +162,12 @@ export default function Navbar() {
                     {/* Cart button visible on mobile, to the right of search */}
                     <button
                         onClick={() => navigate('/cart')}
-                        className="relative p-2 rounded-md text-[#0B2347] hover:bg-gray-100"
+                        className="relative p-2 rounded-md text-[#000000] hover:bg-gray-100"
                         aria-label="Open cart"
                     >
                         <ShoppingBag size={18} />
                         {cartCount > 0 && (
-                            <span className="absolute -top-1 -right-1 text-[10px] bg-[#0B2347] text-white font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                            <span className="absolute -top-1 -right-1 text-[10px] bg-[#000000] text-white font-bold rounded-full w-4 h-4 flex items-center justify-center">
                                 {cartCount}
                             </span>
                         )}
@@ -189,14 +189,14 @@ export default function Navbar() {
                         <>
                             <button
                                 onClick={() => navigate("/login")}
-                                className="flex items-center space-x-2 bg-[#0B2347] text-white px-3 py-2 rounded-full hover:bg-white hover:text-[#0B2347] transition"
+                                className="flex items-center space-x-2 bg-[#000000] text-white px-3 py-2 rounded-full hover:bg-white hover:text-[#000000] transition"
                             >
                                 <User size={18} />
                                 <span className="text-sm font-medium">Login</span>
                             </button>
                             <button
                                 onClick={() => navigate("/signup")}
-                                className="flex items-center space-x-2 bg-[#0B2347] text-white px-3 py-2 rounded-full hover:bg-white hover:text-[#0B2347] transition"
+                                className="flex items-center space-x-2 bg-[#000000] text-white px-3 py-2 rounded-full hover:bg-white hover:text-[#000000] transition"
                             >
                                 <User size={18} />
                                 <span className="text-sm font-medium">Register</span>
@@ -206,7 +206,7 @@ export default function Navbar() {
                         <div className="relative">
                             <button
                                 onClick={() => setProfileOpen(!profileOpen)}
-                                className="flex items-center space-x-2 bg-[#0B2347] text-white px-3 py-2 rounded-full hover:bg-white hover:text-[#0B2347] transition"
+                                className="flex items-center space-x-2 bg-[#000000] text-white px-3 py-2 rounded-full hover:bg-white hover:text-[#000000] transition"
                             >
                                 <User size={18} />
                                 <span className="text-sm font-medium">{userName}</span>
@@ -246,12 +246,12 @@ export default function Navbar() {
                     {/* Cart */}
                     <button
                         onClick={() => navigate("/cart")}
-                        className="relative flex items-center bg-[#0B2347] text-white rounded-full px-2 py-2 hover:bg-white hover:text-[#0B2347] transition"
+                        className="relative flex items-center bg-[#000000] text-white rounded-full px-2 py-2 hover:bg-white hover:text-[#000000] transition"
                     >
                         <ShoppingBag size={18} />
                         <span className="ml-2 text-sm">${cartTotal.toFixed(2)}</span>
                         {cartCount > 0 && (
-                            <span className="absolute -top-1 -right-1 text-xs bg-white text-[#0B2347] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                            <span className="absolute -top-1 -right-1 text-xs bg-white text-[#000000] font-bold rounded-full w-4 h-4 flex items-center justify-center">
                                 {cartCount}
                             </span>
                         )}
@@ -275,7 +275,7 @@ export default function Navbar() {
             )}
 
             {/* Bottom Menu */}
-            <nav className="bg-[#0B2347] border-t border-white/10">
+                <nav className="bg-[#000000] border-t border-white/10">
                 <ul className="hidden md:flex items-center justify-center space-x-10 px-6 py-4 text-lg font-semibold text-white max-w-7xl mx-auto">
                     {/* Browse Categories */}
                     <li className="relative">
@@ -344,13 +344,13 @@ export default function Navbar() {
                             <div className="mt-4 flex items-center gap-3">
                                 {!isLoggedIn ? (
                                     <>
-                                        <button onClick={() => { navigate('/login'); setMobileMenuOpen(false); }} className="flex-1 px-3 py-2 bg-[#0B2347] text-white rounded">Login</button>
-                                        <button onClick={() => { navigate('/signup'); setMobileMenuOpen(false); }} className="flex-1 px-3 py-2 bg-[#f9b233] text-[#0B2347] rounded">Register</button>
+                                        <button onClick={() => { navigate('/login'); setMobileMenuOpen(false); }} className="flex-1 px-3 py-2 bg-[#000000] text-white rounded">Login</button>
+                                        <button onClick={() => { navigate('/signup'); setMobileMenuOpen(false); }} className="flex-1 px-3 py-2 bg-[#f9b233] text-[#000000] rounded">Register</button>
                                     </>
                                 ) : (
-                                    <button onClick={() => { navigate('/profile'); setMobileMenuOpen(false); }} className="flex-1 px-3 py-2 bg-[#0B2347] text-white rounded">Account</button>
+                                    <button onClick={() => { navigate('/profile'); setMobileMenuOpen(false); }} className="flex-1 px-3 py-2 bg-[#000000] text-white rounded">Account</button>
                                 )}
-                                <button onClick={() => { navigate('/cart'); setMobileMenuOpen(false); }} className="px-3 py-2 bg-white text-[#0B2347] rounded border">Cart</button>
+                                <button onClick={() => { navigate('/cart'); setMobileMenuOpen(false); }} className="px-3 py-2 bg-white text-[#000000] rounded border">Cart</button>
                             </div>
 
                             <div className="mt-6">

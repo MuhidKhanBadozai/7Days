@@ -119,7 +119,7 @@ const Home = () => {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`uppercase text-sm tracking-wide ${activeTab === tab ? 'border-b-2 border-[#0B2347] pb-1 text-black' : 'text-gray-600'}`}
+                className={`uppercase text-sm tracking-wide ${activeTab === tab ? 'border-b-2 border-[#000000] pb-1 text-black' : 'text-gray-600'}`}
               >
                 {tab}
               </button>
@@ -165,23 +165,12 @@ const Home = () => {
                       }}
                     />
 
-                    {/* Add to Cart Icon Overlay */}
-                    <div className="absolute opacity-0 group-hover:opacity-100 transition-all duration-500">
-                      <div
-                        className="bg-[#0B2347] p-4 rounded-full transform translate-y-6 group-hover:translate-y-0 transition-all duration-500 shadow-lg cursor-pointer"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleAddToCart(product);
-                        }}
-                      >
-                        <ShoppingCart size={24} color="white" />
-                      </div>
-                    </div>
+                    {/* Hover overlay removed: add-to-cart handled via quantity + Add button */}
                   </div>
 
                   {/* Product Info */}
                   <h3 
-                    className="text-base font-semibold mb-2 text-gray-800 line-clamp-2 hover:text-[#0B2347] transition-colors cursor-pointer"
+                    className="text-base font-semibold mb-2 text-gray-800 line-clamp-2 hover:text-[#000000] transition-colors cursor-pointer"
                     onClick={() => handleProductClick(product.sku)}
                   >
                     {product.name || 'Product Name'}
@@ -217,7 +206,7 @@ const Home = () => {
                       min="1"
                       value={quantities[product.sku] || 1}
                       onChange={(e) => handleQuantityChange(product.sku, e.target.value)}
-                      className="w-12 text-center border border-gray-300 rounded-md p-1 focus:ring-1 focus:ring-[#0B2347] text-sm"
+                      className="w-12 text-center border border-gray-300 rounded-md p-1 focus:ring-1 focus:ring-[#000000] text-sm"
                       onClick={(e) => e.stopPropagation()}
                     />
                     <button

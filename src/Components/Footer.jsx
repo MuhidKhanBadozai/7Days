@@ -28,13 +28,13 @@ const Footer = () => {
   };
 
   return (
-    <footer className="bg-[#0B2347] text-white py-10 px-6 md:px-16">
+  <footer className="bg-[#000000] text-white py-10 px-6 md:px-16">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-6 border-b border-gray-700 pb-10">
         {/* Brand Info */}
         <div className="space-y-4">
           <img
             src="/logo.jpg"
-            alt="Brand Masters Wholesale"
+            alt="Putra Traders"
             className="w-32 md:w-48 h-auto object-contain"
           />
           <div className="flex items-start gap-2">
@@ -135,7 +135,7 @@ const Footer = () => {
               placeholder="Email Address"
               className="w-full md:w-64 px-4 py-2 rounded-md text-black focus:outline-none"
             />
-            <button className="bg-[#f9b233] text-[#0B2347] font-semibold py-2 rounded-md hover:bg-yellow-500 transition w-full md:w-auto">
+            <button className="bg-[#f9b233] text-[#000000] font-semibold py-2 rounded-md hover:bg-yellow-500 transition w-full md:w-auto">
               SUBSCRIBE NOW
             </button>
           </div>
@@ -145,19 +145,58 @@ const Footer = () => {
       {/* Bottom Section */}
       <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center mt-8 text-sm text-gray-400 gap-4">
         <div>
-          <p>Shipping System:</p>
-          <div className="flex gap-3 mt-2">
-            <img src="/images/dhl.png" alt="DHL" className="h-6" />
-            <img src="/images/fedex.png" alt="FedEx" className="h-6" />
-            <img src="/images/ups.png" alt="UPS" className="h-6" />
-            <img src="/images/usps.png" alt="USPS" className="h-6" />
-            <img src="/images/dpd.png" alt="DPD" className="h-6" />
-            <img src="/images/gls.png" alt="GLS" className="h-6" />
+          <p>Payment Methods:</p>
+          <div className="flex gap-4 mt-2 items-center">
+            {/* Mastercard (two overlapping circles) */}
+            <div className="flex items-center gap-2">
+              <svg className="h-6 w-10" viewBox="0 0 48 30" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                <circle cx="18" cy="15" r="10" fill="#EB001B" />
+                <circle cx="30" cy="15" r="10" fill="#F79E1B" />
+              </svg>
+              <span className="sr-only">Mastercard</span>
+            </div>
+
+            {/* Visa (simple blue rectangle with V) */}
+            <div className="flex items-center gap-2">
+              <svg className="h-6 w-10" viewBox="0 0 48 30" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                <rect width="48" height="30" rx="4" fill="#1A1F71" />
+                <text x="24" y="20" fill="#fff" fontSize="12" fontFamily="Arial, Helvetica, sans-serif" textAnchor="middle">VISA</text>
+              </svg>
+              <span className="sr-only">Visa</span>
+            </div>
+
+            {/* American Express */}
+            <div className="flex items-center gap-2">
+              <svg className="h-6 w-12" viewBox="0 0 60 30" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                <rect width="60" height="30" rx="4" fill="#2E77BB" />
+                <text x="30" y="20" fill="#fff" fontSize="10" fontFamily="Arial, Helvetica, sans-serif" textAnchor="middle">AMEX</text>
+              </svg>
+              <span className="sr-only">American Express</span>
+            </div>
+
+            {/* PayPal */}
+            <div className="flex items-center gap-2">
+              <svg className="h-6 w-10" viewBox="0 0 48 30" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                <rect width="48" height="30" rx="4" fill="#003087" />
+                <text x="24" y="20" fill="#fff" fontSize="10" fontFamily="Arial, Helvetica, sans-serif" textAnchor="middle">PayPal</text>
+              </svg>
+              <span className="sr-only">PayPal</span>
+            </div>
+
+            {/* UnionPay */}
+            <div className="flex items-center gap-2">
+              <svg className="h-6 w-12" viewBox="0 0 64 30" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                <rect width="64" height="30" rx="4" fill="#0A7A3E" />
+                <rect x="0" y="0" width="32" height="30" rx="4" fill="#DB1F26" />
+                <text x="40" y="20" fill="#fff" fontSize="9" fontFamily="Arial, Helvetica, sans-serif" textAnchor="middle">UnionPay</text>
+              </svg>
+              <span className="sr-only">UnionPay</span>
+            </div>
           </div>
         </div>
 
         <p className="text-center md:text-right">
-          Copyright © 2024 BM Wholesale all rights reserved.
+          Copyright © 2024 Putra Traders. All rights reserved.
         </p>
       </div>
     </footer>

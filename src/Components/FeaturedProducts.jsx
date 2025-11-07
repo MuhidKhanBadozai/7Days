@@ -100,7 +100,7 @@ const FeaturedProducts = () => {
     return (
       <section className="w-full py-16 bg-white">
         <div className="max-w-[1500px] mx-auto px-8">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center text-[#0B2347] mb-8">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center text-[#000000] mb-8">
             Featured Products
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -126,7 +126,7 @@ const FeaturedProducts = () => {
     <section className="w-full py-16 bg-white">
       <div className="max-w-[1500px] mx-auto px-8">
         {/* Title */}
-        <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center text-[#0B2347] mb-8">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center text-[#000000] mb-8">
           Featured Products
         </h2>
 
@@ -147,7 +147,7 @@ const FeaturedProducts = () => {
         <div className="text-center mb-8">
           <button
             onClick={fetchFeaturedProducts}
-            className="bg-[#0B2347] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#0a1f3d] transform hover:-translate-y-1 transition-all duration-200 shadow-lg flex items-center gap-2 mx-auto"
+            className="bg-[#000000] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#000000] transform hover:-translate-y-1 transition-all duration-200 shadow-lg flex items-center gap-2 mx-auto"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -160,10 +160,10 @@ const FeaturedProducts = () => {
         {featuredProducts.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-2xl text-gray-600 mb-4">No products found</p>
-            <button
-              onClick={fetchFeaturedProducts}
-              className="bg-[#0B2347] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#0a1f3d] transition-colors"
-            >
+              <button
+                onClick={fetchFeaturedProducts}
+                className="bg-[#000000] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#000000] transition-colors"
+              >
               Try Again
             </button>
           </div>
@@ -188,23 +188,12 @@ const FeaturedProducts = () => {
                     }}
                   />
 
-                  {/* Add to Cart Icon Overlay */}
-                  <div className="absolute opacity-0 group-hover:opacity-100 transition-all duration-500">
-                    <div
-                      className="bg-[#0B2347] p-4 rounded-full transform translate-y-6 group-hover:translate-y-0 transition-all duration-500 shadow-lg cursor-pointer"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAddToCart(product);
-                      }}
-                    >
-                      <ShoppingCart size={24} color="white" />
-                    </div>
-                  </div>
+                  {/* Hover overlay removed: add-to-cart handled via quantity + Add button */}
                 </div>
 
                 {/* Product Info */}
                 <h3 
-                  className="text-base font-semibold mb-2 text-gray-800 line-clamp-2 cursor-pointer hover:text-[#0B2347] transition-colors"
+                  className="text-base font-semibold mb-2 text-gray-800 line-clamp-2 cursor-pointer hover:text-[#000000] transition-colors"
                   onClick={() => handleProductClick(product.sku)}
                 >
                   {product.name}
@@ -240,7 +229,7 @@ const FeaturedProducts = () => {
                     min="1"
                     value={quantities[product.sku] || 1}
                     onChange={(e) => handleQuantityChange(product.sku, e.target.value)}
-                    className="w-12 text-center border border-gray-300 rounded-md p-1 focus:ring-1 focus:ring-[#0B2347] text-sm"
+                    className="w-12 text-center border border-gray-300 rounded-md p-1 focus:ring-1 focus:ring-[#000000] text-sm"
                     onClick={(e) => e.stopPropagation()}
                   />
                   <button
