@@ -16,6 +16,10 @@ import PaymentProcess from "./Pages/PaymentProcess.jsx";
 import PrivacyPolicy from "./Pages/PrivacyPolicy.jsx";
 import TermsOfService from "./Pages/TermsCondition.jsx";
 import ReturnsRefund from "./Pages/ReturnsRefund.jsx";
+import WPAdmin from "./Pages/wpadmin.jsx";
+import AdminDashboard from "./Pages/AdminDashboard.jsx";
+import ManageProducts from "./Pages/ManageProducts.jsx";
+import ProtectedRoute from "./Components/ProtectedRoute.jsx";
 
 function App() {
   return (
@@ -38,6 +42,23 @@ function App() {
         <Route path="/privacypolicy" element={<PrivacyPolicy />} />
         <Route path="/termsofservice" element={<TermsOfService />} />
         <Route path="/returnsrefund" element={<ReturnsRefund />} />
+        <Route path="/ap-admin" element={<WPAdmin />} />
+        <Route 
+          path="/ap-admin/dashboard" 
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/ap-admin/products" 
+          element={
+            <ProtectedRoute>
+              <ManageProducts />
+            </ProtectedRoute>
+          } 
+        />
       </Routes>
 
       {/* Footer is outside Routes so it shows on every page */}
