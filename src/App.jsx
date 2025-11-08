@@ -19,6 +19,7 @@ import ReturnsRefund from "./Pages/ReturnsRefund.jsx";
 import WPAdmin from "./Pages/wpadmin.jsx";
 import AdminDashboard from "./Pages/AdminDashboard.jsx";
 import ManageProducts from "./Pages/ManageProducts.jsx";
+import ManageCategories from "./Pages/ManageCategories.jsx";
 import ProtectedRoute from "./Components/ProtectedRoute.jsx";
 
 function App() {
@@ -56,6 +57,14 @@ function App() {
           element={
             <ProtectedRoute>
               <ManageProducts />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/ap-admin/categories" 
+          element={
+            <ProtectedRoute>
+              <ManageCategories />
             </ProtectedRoute>
           } 
         />

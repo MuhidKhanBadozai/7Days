@@ -56,6 +56,26 @@ export default function AdminDashboard() {
                 </div>
             </nav>
 
+            {/* Secondary Navigation */}
+            <div className="bg-gray-800">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center justify-start h-12 space-x-6">
+                        <a href="/ap-admin/dashboard" 
+                           className="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium">
+                            Dashboard
+                        </a>
+                        <a href="/ap-admin/products" 
+                           className="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium">
+                            Products
+                        </a>
+                        <a href="/ap-admin/categories" 
+                           className="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium">
+                            Categories
+                        </a>
+                    </div>
+                </div>
+            </div>
+
             {/* Dashboard Content */}
             <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
                 {/* Stats Overview */}
@@ -166,7 +186,10 @@ export default function AdminDashboard() {
                             <p className="mt-2 text-sm text-gray-500">Manage and process customer orders</p>
                         </button>
 
-                        <button className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow text-left">
+                        <button 
+                            onClick={() => navigate('/ap-admin/categories')}
+                            className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow text-left"
+                        >
                             <h3 className="text-gray-900 font-medium">Manage Categories</h3>
                             <p className="mt-2 text-sm text-gray-500">Add or edit product categories</p>
                         </button>

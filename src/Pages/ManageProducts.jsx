@@ -7,7 +7,8 @@ export default function ManageProducts() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [showAddModal, setShowAddModal] = useState(false);
-    const [formData, setFormData] = useState({
+    const initialForm = {
+        id: null,
         sku: '',
         name: '',
         description: '',
@@ -17,8 +18,13 @@ export default function ManageProducts() {
         dimensions: '',
         quantity: '',
         category_id: '',
-        image: null
-    });
+        // images: for new uploads (File objects)
+        images: [],
+        // existing_images: array of image URLs (strings) when editing
+        existing_images: []
+    };
+
+    const [formData, setFormData] = useState(initialForm);
     const navigate = useNavigate();
 
     // Fetch products and categories on mount
@@ -49,8 +55,9 @@ export default function ManageProducts() {
 
     const fetchCategories = async () => {
         try {
-            const response = await fetch('https://putratraders.com/api/fetch_all_categories.php');
+            const response = await fetch('https://putratraders.com/api/fetch_all_categories_admin.php');
             const data = await response.json();
+            console.log('Fetched categories:', data);
             if (Array.isArray(data)) {
                 setCategories(data);
             }
@@ -62,11 +69,11 @@ export default function ManageProducts() {
     const handleInputChange = (e) => {
         const { name, value, type, files } = e.target;
         if (type === 'file') {
+            // support multiple file uploads
+            const fileList = files ? Array.from(files) : [];
             setFormData(prev => ({
                 ...prev,
-                [name]: files[0],
-                // Keep the old image_url in case upload fails
-                previous_image_url: prev.image_url
+                images: fileList
             }));
         } else {
             setFormData(prev => ({
@@ -81,48 +88,44 @@ export default function ManageProducts() {
         setError('');
 
         const formDataToSend = new FormData();
-        Object.keys(formData).forEach(key => {
-            if (key === 'image_url') return; // Skip the image_url field as it's for display only
-            if (formData[key] !== null) {
-                formDataToSend.append(key, formData[key]);
-            }
-        });
+        // Append simple fields
+        ['id', 'sku', 'name', 'description', 'price_200_500', 'price_501_plus', 'weight', 'dimensions', 'quantity', 'category_id']
+            .forEach(k => {
+                if (formData[k] !== undefined && formData[k] !== null) formDataToSend.append(k, formData[k]);
+            });
+
+        // Append new image files (multiple)
+        if (Array.isArray(formData.images) && formData.images.length > 0) {
+            formData.images.forEach((file, idx) => {
+                formDataToSend.append('images[]', file);
+            });
+        }
+        // Also send information about existing images when editing (so backend can keep or remove them)
+        if (formData.existing_images && formData.existing_images.length > 0) {
+            formData.existing_images.forEach((url, i) => formDataToSend.append('existing_images[]', url));
+        }
 
         try {
-            const endpoint = formData.id 
-                ? 'https://putratraders.com/api/admin/update_product.php'
-                : 'https://putratraders.com/api/admin/add_product.php';
-
+            const endpoint = formData.id
+                ? 'https://putratraders.com/api/update_product.php'
+                : 'https://putratraders.com/api/add_product.php';
+            console.log('Sending Data:', formData);
             const response = await fetch(endpoint, {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${JSON.parse(localStorage.getItem('admin_token')).id}`
-                },
-                body: formDataToSend
+                body: formDataToSend,
             });
 
             const data = await response.json();
             if (data.success) {
                 setShowAddModal(false);
                 fetchProducts(); // Refresh product list
-                setFormData({
-                    sku: '',
-                    name: '',
-                    description: '',
-                    price_200_500: '',
-                    price_501_plus: '',
-                    weight: '',
-                    dimensions: '',
-                    quantity: '',
-                    category_id: '',
-                    image: null
-                });
+                setFormData(initialForm);
             } else {
                 setError(data.error || 'Failed to add product');
             }
         } catch (err) {
             setError('Network error while adding product');
-            console.error(err);
+            console.error('Network error while adding product', err);
         }
     };
 
@@ -130,13 +133,12 @@ export default function ManageProducts() {
         if (!window.confirm('Are you sure you want to delete this product?')) return;
 
         try {
-            const response = await fetch('https://putratraders.com/api/admin/delete_product.php', {
+            const response = await fetch('https://putratraders.com/api/delete_product.php', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${JSON.parse(localStorage.getItem('admin_token')).id}`
+                    'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ id })
+                body: JSON.stringify({ id })  
             });
 
             const data = await response.json();
@@ -151,6 +153,7 @@ export default function ManageProducts() {
         }
     };
 
+
     return (
         <div className="min-h-screen bg-gray-100 py-6">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -161,7 +164,7 @@ export default function ManageProducts() {
                         <p className="mt-1 text-sm text-gray-600">Add, edit, or remove products from your inventory</p>
                     </div>
                     <button
-                        onClick={() => setShowAddModal(true)}
+                        onClick={() => { setFormData(initialForm); setShowAddModal(true); }}
                         className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800"
                     >
                         Add New Product
@@ -202,7 +205,7 @@ export default function ManageProducts() {
                                     const imageUrl = product.image_url?.startsWith('http')
                                         ? product.image_url
                                         : `https://putratraders.com/${product.image_url}`;
-                                    
+
                                     return (
                                         <tr key={product.id}>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{product.sku}</td>
@@ -228,9 +231,20 @@ export default function ManageProducts() {
                                                 </button>
                                                 <button
                                                     onClick={() => {
+                                                        // populate formData for editing
                                                         setFormData({
-                                                            ...product,
-                                                            image_url: imageUrl // Use the full image URL
+                                                            id: product.id,
+                                                            sku: product.sku || '',
+                                                            name: product.name || '',
+                                                            description: product.description || '',
+                                                            price_200_500: product.price_200_500 || '',
+                                                            price_501_plus: product.price_501_plus || '',
+                                                            weight: product.weight || '',
+                                                            dimensions: product.dimensions || '',
+                                                            quantity: product.quantity || '',
+                                                            category_id: product.category_id || '',
+                                                            images: [], // new uploads
+                                                            existing_images: Array.isArray(product.images) && product.images.length ? product.images : (product.image_url ? [product.image_url] : [])
                                                         });
                                                         setShowAddModal(true);
                                                     }}
@@ -255,7 +269,7 @@ export default function ManageProducts() {
                         <div className="flex justify-between items-center mb-4">
                             <h3 className="text-lg font-medium">{formData.id ? 'Edit Product' : 'Add New Product'}</h3>
                             <button
-                                onClick={() => setShowAddModal(false)}
+                                onClick={() => { setShowAddModal(false); setFormData(initialForm); }}
                                 className="text-gray-400 hover:text-gray-500"
                             >
                                 ✕
@@ -371,9 +385,11 @@ export default function ManageProducts() {
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm"
                                 >
                                     <option value="">Select a category</option>
+                                    {console.log('Category:', categories)},
                                     {categories.map((category, index) => (
-                                        <option key={index} value={category.id}>
-                                            {category}
+                                        console.log('Category:', category.id),
+                                        <option key={category.id} value={category.id}>
+                                            {category.name}
                                         </option>
                                     ))}
                                 </select>
@@ -381,22 +397,27 @@ export default function ManageProducts() {
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Product Image</label>
-                                {formData.image_url && (
+                                {/* show existing images (if any) */}
+                                {formData.existing_images && formData.existing_images.length > 0 && (
                                     <div className="mt-2 mb-4">
-                                        <p className="text-sm text-gray-500 mb-2">Current Image:</p>
-                                        <img
-                                            src={formData.image_url.startsWith('http') 
-                                                ? formData.image_url 
-                                                : `https://putratraders.com/${formData.image_url}`
-                                            }
-                                            alt="Current product"
-                                            className="w-32 h-32 object-contain border rounded-md"
-                                        />
+                                        <p className="text-sm text-gray-500 mb-2">Current Images:</p>
+                                        <div className="flex gap-2">
+                                            {formData.existing_images.map((img, i) => (
+                                                <img
+                                                    key={i}
+                                                    src={img.startsWith('http') ? img : `https://putratraders.com/${img}`}
+                                                    alt={`product-${i}`}
+                                                    className="w-20 h-20 object-contain border rounded-md"
+                                                />
+                                            ))}
+                                        </div>
                                     </div>
                                 )}
+
                                 <input
                                     type="file"
-                                    name="image"
+                                    name="images"
+                                    multiple
                                     onChange={handleInputChange}
                                     accept="image/*"
                                     className="mt-1 block w-full text-sm text-gray-500
@@ -407,14 +428,14 @@ export default function ManageProducts() {
                                         hover:file:bg-gray-800"
                                 />
                                 <p className="mt-1 text-sm text-gray-500">
-                                    {formData.id ? "Upload new image to replace the current one" : "Upload a product image"}
+                                    {formData.id ? "Upload new images to add/replace the current ones" : "Upload one or more product images"}
                                 </p>
                             </div>
 
                             <div className="flex justify-end gap-4 mt-5">
                                 <button
                                     type="button"
-                                    onClick={() => setShowAddModal(false)}
+                                    onClick={() => { setShowAddModal(false); setFormData(initialForm); }}
                                     className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
                                 >
                                     Cancel
