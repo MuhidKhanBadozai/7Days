@@ -248,9 +248,15 @@ export default function ManageProducts() {
                                                         });
                                                         setShowAddModal(true);
                                                     }}
-                                                    className="text-indigo-600 hover:text-indigo-900"
+                                                    className="text-indigo-600 hover:text-indigo-900 mr-4"
                                                 >
                                                     Edit
+                                                </button>
+                                                <button
+                                                    onClick={() => navigate(`/product/${product.sku}`)}
+                                                    className="text-green-600 hover:text-green-900"
+                                                >
+                                                    View
                                                 </button>
                                             </td>
                                         </tr>
