@@ -25,6 +25,7 @@ export default function ManageProducts() {
     };
 
     const [formData, setFormData] = useState(initialForm);
+    const [uploadProgress, setUploadProgress] = useState(0);
     const navigate = useNavigate();
 
     // Fetch products and categories on mount
@@ -86,6 +87,7 @@ export default function ManageProducts() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        setUploadProgress(0);
 
         const formDataToSend = new FormData();
         // Append simple fields
@@ -109,10 +111,34 @@ export default function ManageProducts() {
             const endpoint = formData.id
                 ? 'https://putratraders.com/api/update_product.php'
                 : 'https://putratraders.com/api/add_product.php';
+            console.log('Endpoint:', endpoint);
             console.log('Sending Data:', formData);
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                body: formDataToSend,
+            // Use XMLHttpRequest for upload progress
+            const response = await new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                
+                xhr.upload.onprogress = (event) => {
+                    if (event.lengthComputable) {
+                        const percentCompleted = Math.round((event.loaded * 100) / event.total);
+                        setUploadProgress(percentCompleted);
+                    }
+                };
+
+                xhr.onload = () => {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        resolve({
+                            json: () => JSON.parse(xhr.responseText),
+                            status: xhr.status
+                        });
+                    } else {
+                        reject(new Error(xhr.statusText));
+                    }
+                };
+
+                xhr.onerror = () => reject(new Error('Network Error'));
+                
+                xhr.open('POST', endpoint);
+                xhr.send(formDataToSend);
             });
 
             const data = await response.json();
@@ -120,6 +146,7 @@ export default function ManageProducts() {
                 setShowAddModal(false);
                 fetchProducts(); // Refresh product list
                 setFormData(initialForm);
+                setUploadProgress(0);
             } else {
                 setError(data.error || 'Failed to add product');
             }
@@ -391,9 +418,7 @@ export default function ManageProducts() {
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm"
                                 >
                                     <option value="">Select a category</option>
-                                    {console.log('Category:', categories)},
                                     {categories.map((category, index) => (
-                                        console.log('Category:', category.id),
                                         <option key={category.id} value={category.id}>
                                             {category.name}
                                         </option>
@@ -407,14 +432,28 @@ export default function ManageProducts() {
                                 {formData.existing_images && formData.existing_images.length > 0 && (
                                     <div className="mt-2 mb-4">
                                         <p className="text-sm text-gray-500 mb-2">Current Images:</p>
-                                        <div className="flex gap-2">
+                                        <div className="flex flex-wrap gap-2">
                                             {formData.existing_images.map((img, i) => (
-                                                <img
-                                                    key={i}
-                                                    src={img.startsWith('http') ? img : `https://putratraders.com/${img}`}
-                                                    alt={`product-${i}`}
-                                                    className="w-20 h-20 object-contain border rounded-md"
-                                                />
+                                                <div key={i} className="relative group">
+                                                    <img
+                                                        src={img.startsWith('http') ? img : `https://putratraders.com/${img}`}
+                                                        alt={`product-${i}`}
+                                                        className="w-20 h-20 object-contain border rounded-md"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setFormData(prev => ({
+                                                                ...prev,
+                                                                existing_images: prev.existing_images.filter((_, index) => index !== i)
+                                                            }));
+                                                        }}
+                                                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs 
+                                                                 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600"
+                                                    >
+                                                        ×
+                                                    </button>
+                                                </div>
                                             ))}
                                         </div>
                                     </div>
@@ -438,17 +477,38 @@ export default function ManageProducts() {
                                 </p>
                             </div>
 
+                            {uploadProgress > 0 && uploadProgress < 100 && (
+                                <div className="mb-4">
+                                    <div className="flex justify-between mb-1">
+                                        <span className="text-sm font-medium text-gray-700">Uploading...</span>
+                                        <span className="text-sm font-medium text-gray-700">{uploadProgress}%</span>
+                                    </div>
+                                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                        <div 
+                                            className="bg-blue-600 h-2.5 rounded-full transition-all duration-300" 
+                                            style={{ width: `${uploadProgress}%` }}
+                                        ></div>
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="flex justify-end gap-4 mt-5">
                                 <button
                                     type="button"
-                                    onClick={() => { setShowAddModal(false); setFormData(initialForm); }}
+                                    onClick={() => { 
+                                        setShowAddModal(false); 
+                                        setFormData(initialForm);
+                                        setUploadProgress(0);
+                                    }}
                                     className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+                                    disabled={uploadProgress > 0 && uploadProgress < 100}
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-4 py-2 text-sm font-medium text-white bg-black hover:bg-gray-800 rounded-md"
+                                    className="px-4 py-2 text-sm font-medium text-white bg-black hover:bg-gray-800 rounded-md disabled:bg-gray-400"
+                                    disabled={uploadProgress > 0 && uploadProgress < 100}
                                 >
                                     {formData.id ? 'Update Product' : 'Add Product'}
                                 </button>
