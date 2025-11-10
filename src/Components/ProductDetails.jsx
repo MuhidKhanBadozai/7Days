@@ -23,13 +23,43 @@ const ProductDetails = () => {
   const fetchProduct = async (skuParam) => {
     try {
       setLoading(true);
-      const res = await fetch(`${API_BASE}/fetch_product_by_sku.php?sku=${skuParam}`, {
+      const res = await fetch(`${API_BASE}/fetch_product_by_sku.php?sku=${encodeURIComponent(skuParam)}`, {
         cache: "no-store",
       });
-      const data = await res.json();
-      if (data && data.sku) {
-        setProduct(data);
-        setMainImage(buildFullImageUrl(data.image_main || data.image_url));
+
+      // Inspect content-type to avoid crashing on non-JSON responses
+      const contentType = res.headers.get('content-type') || '';
+      let data = null;
+      if (contentType.includes('application/json')) {
+        try {
+          data = await res.json();
+        } catch (err) {
+          console.error('Failed to parse JSON from product endpoint:', err);
+          const text = await res.text();
+          console.error('Response text:', text);
+        }
+      } else {
+        // If not JSON, capture text for debugging
+        const text = await res.text();
+        console.error('Non-JSON response from product endpoint:', text);
+      }
+
+      // Normalize possible response shapes:
+      // - { sku: ... }
+      // - { product: { ... } }
+      // - [ { ... } ]
+      let productData = null;
+      if (Array.isArray(data)) {
+        productData = data[0];
+      } else if (data && data.product) {
+        productData = data.product;
+      } else {
+        productData = data;
+      }
+
+      if (productData && (productData.sku || productData.id)) {
+        setProduct(productData);
+        setMainImage(buildFullImageUrl(productData.image_main || productData.image_url || (productData.images && productData.images[0])));
       } else {
         setProduct(null);
       }
@@ -314,19 +344,29 @@ const ProductDetails = () => {
               <div className="space-y-6">
                 <h3 className="text-2xl font-bold text-gray-900">About This Product</h3>
                 <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed">
-                  <p className="text-lg">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                  </p>
-                  <p>
-                    Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.
-                  </p>
-                  <ul className="list-disc pl-6 space-y-2">
-                    <li>High-quality materials for long-lasting durability</li>
-                    <li>Precision engineering for optimal performance</li>
-                    <li>Industry-standard compliance and certifications</li>
-                    <li>Easy installation and maintenance</li>
-                    <li>Comprehensive warranty coverage</li>
-                  </ul>
+                  {/* Prefer server-provided description fields. Fall back to a friendly message. */}
+                  {product.description || product.long_description ? (
+                    <div
+                      dangerouslySetInnerHTML={{ __html: product.description || product.long_description }}
+                    />
+                  ) : (
+                    <p className="text-lg text-gray-700">No product description available.</p>
+                  )}
+
+                  {/* If backend provides a features/bullets array, render it. Otherwise skip. */}
+                  {Array.isArray(product.features) && product.features.length > 0 ? (
+                    <ul className="list-disc pl-6 space-y-2">
+                      {product.features.map((f, idx) => (
+                        <li key={idx}>{f}</li>
+                      ))}
+                    </ul>
+                  ) : product.bullets && Array.isArray(product.bullets) && product.bullets.length > 0 ? (
+                    <ul className="list-disc pl-6 space-y-2">
+                      {product.bullets.map((b, idx) => (
+                        <li key={idx}>{b}</li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </div>
               </div>
             )}
