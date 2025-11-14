@@ -64,7 +64,7 @@ const AboutUs = () => {
             <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed space-y-6">
                 <p className="text-xl">
                 <strong>Partner with Imaging Supplies Wholesale Group Inc</strong><br />
-                Putra Traders, a leading wholesale distributor in the USA, specializes in offering top-selling brand products at unbeatable prices. All payments for our website, brandmasterswholesale.com, are processed securely through the bank accounts of our trusted partner company, Imaging Supplies Wholesale Group Inc and Go Swift Logistics LLC. This ensures a seamless and reliable transaction process for our customers.
+                Putra Traders, a leading wholesale distributor in the USA, specializes in offering top-selling brand products at unbeatable prices. All payments for our website, putratraders.com, are processed securely through the bank accounts of our trusted partner company, Imaging Supplies Wholesale Group Inc and Go Swift Logistics LLC. This ensures a seamless and reliable transaction process for our customers.
               </p>
             </div>
           </section>
